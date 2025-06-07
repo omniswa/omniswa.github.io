@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LitEra Reader - Public Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #282A36;
+            --bg-medium: #383A59;
+            --bg-light: #44475A;
+            --text-primary: #F8F8F2;
+            --text-secondary: #AEAEAE;
+            --accent-primary: #BD93F9;
+            --accent-secondary: #50FA7B;
+            --border-color: #6272A4;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        
+        body.reading-mode {
+            background: #1c1d24;
+        }
+        
+        .header {
+            background: var(--bg-medium);
+            border-bottom-right-radius: 12px;
+            border-bottom-left-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            border: 1px solid var(--bg-light);
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .search-container {
+            flex-grow: 1;
+            max-width: 450px;
+        }
+        
+        #search-input {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        #search-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(189, 147, 249, 0.25);
+        }
+        
+        #search-input::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-secondary) 0%, #42E66C 100%);
+            color: var(--bg-dark);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(80, 250, 123, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: var(--bg-light);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--border-color) 0%, #4A557B 100%);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #7282B4 0%, #5A658B 100%);
+            box-shadow: 0 4px 10px rgba(98, 114, 164, 0.3);
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+        
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .main-content {
+            background: var(--bg-medium);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--bg-light);
+            min-height: 400px;
+        }
+        
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        
+        .book-card {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+        }
+        
+        .book-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent-primary);
+        }
+        
+        .book-cover {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            background-color: var(--bg-dark);
+        }
+        
+        .book-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+        
+        .book-author {
+            color: var(--accent-primary);
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        
+        .book-genre {
+            background: var(--bg-dark);
+            color: var(--accent-primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 12px;
+            border: 1px solid var(--accent-primary);
+        }
+        
+        .book-progress {
+            background: var(--bg-medium);
+            border-radius: 8px;
+            padding: 8px;
+            margin-top: auto;
+            margin-bottom: 12px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .progress-bar {
+            background: var(--bg-dark);
+            height: 4px;
+            border-radius: 4px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(135deg, var(--accent-secondary) 0%, #42E66C 100%);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .book-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .reading-view {
+            display: none;
+            height: 100vh;
+            grid-template-rows: auto auto 1fr;
+            background: var(--bg-dark);
+            overflow: hidden;
+        }
+        
+        .reading-header {
+            border-bottom: 1px solid var(--bg-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-medium);
+            padding: 16px 30px;
+        }
+        
+        .chapter-nav {
+            padding: 16px 30px;
+            background: var(--bg-medium);
+            border-bottom: 1px solid var(--bg-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chapter-content {
+            overflow-y: auto;
+            padding: 24px 30px;
+        }
+        
+        .chapter-content p {
+            text-align: justify;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #dcdcdc;
+        }
+        
+        .status-container {
+            text-align: center;
+            padding-top: 24px;
+        }
+        
+        .no-books {
+            padding: 40px;
+        }
+        
+        .no-books h3 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+        
+        .no-books p {
+            color: var(--text-secondary);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .skeleton-card {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .skeleton {
+            background-color: var(--bg-medium);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .skeleton::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(98, 114, 164, 0.3), transparent);
+            animation: shimmer 1.8s infinite;
+        }
+        
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+        
+        .skeleton-cover {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 16px;
+        }
+        
+        .skeleton-title {
+            width: 70%;
+            height: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-author {
+            width: 50%;
+            height: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-genre {
+            width: 30%;
+            height: 24px;
+            margin-bottom: 16px;
+            border-radius: 20px;
+        }
+        
+        .skeleton-button {
+            width: 120px;
+            height: 36px;
+            border-radius: 8px;
+        }
+        
+        .chapter-loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .spinner {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            padding: 6px;
+            background: conic-gradient(from 135deg at 50% 50%, var(--accent-secondary), 50%, var(--accent-primary) 0) 0 0 / 50% 50%, conic-gradient(from -45deg at 50% 50%, var(--accent-secondary), 50%, var(--accent-primary) 0) 50% 50% / 50% 50%;
+            background-repeat: no-repeat;
+            animation: spinner-anim 1.2s infinite linear;
+        }
+        
+        @keyframes spinner-anim {
+            100% {
+                transform: rotate(1turn);
+            }
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0s 0.3s;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-content {
+            background: var(--bg-medium);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--bg-light);
+            width: 90%;
+            max-width: 450px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--bg-light);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .modal-header h3 {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+        
+        .modal-close-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .modal-close-btn:hover {
+            opacity: 1;
+        }
+        
+        .modal-body p {
+            color: #e0e0e0;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        .scroll-indicator-container {
+            width: 100%;
+            height: 4px;
+            background-color: var(--bg-light);
+            position: sticky;
+            top: 0;
+        }
+        
+        .scroll-indicator {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
+            border-radius: 0 2px 2px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .book-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .reading-header,
+            .chapter-nav,
+            .chapter-content {
+                padding: 20px;
+            }
+            
+            .reading-header {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+            
+            .chapter-nav {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="library-view">
+            <header class="header">
+                <h1>📖 LitEra</h1>
+                <div class="search-container">
+                    <input type="search" id="search-input" placeholder="Search by title...">
+                </div>
+            </header>
+            
+            <main class="main-content">
+                <div id="books-container" class="book-grid"></div>
+                <div id="status-container" class="status-container">
+                    <div id="books-loading" class="book-grid"></div>
+                    <button id="load-more-btn" class="btn" style="display: none;">Load More</button>
+                    <div id="no-books-container" class="no-books" style="display: none;">
+                        <h3 id="no-books-title"></h3>
+                        <p id="no-books-message"></p>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <div id="reading-view" class="reading-view">
+            <header class="reading-header">
+                <div class="book-info">
+                    <h2 id="reading-book-title"></h2>
+                    <p id="reading-book-author"></p>
+                </div>
+                <div class="reading-controls">
+                    <button class="btn btn-secondary" onclick="closeReader()">← Back to Library</button>
+                </div>
+            </header>
+            
+            <nav class="chapter-nav">
+                <div class="chapter-title" id="current-chapter-title"></div>
+                <div class="nav-buttons">
+                    <button class="btn btn-secondary btn-small" id="prev-chapter-btn" onclick="previousChapter()">‹ Prev</button>
+                    <button class="btn btn-secondary btn-small" id="next-chapter-btn" onclick="nextChapter()">Next ›</button>
+                </div>
+            </nav>
+            
+            <div class="scroll-indicator-container">
+                <div id="scroll-indicator" class="scroll-indicator"></div>
+            </div>
+            
+            <div class="chapter-content" id="chapter-content"></div>
+        </div>
+    </div>
+    
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title"></h3>
+                <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-message"></p>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, orderBy, limit, startAfter, where, startAt, endAt, doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js';
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyAurEd_QHnQT1iwQyYtj3oaFv5NZokJ2vk",
+            authDomain: "litera-25.firebaseapp.com",
+            projectId: "litera-25",
+            storageBucket: "litera-25.firebasestorage.app",
+            messagingSenderId: "479455629673",
+            appId: "1:479455629673:web:b47b219502f99d0a1b6df8",
+            measurementId: "G-QL6QY1CQXC"
+        };
+        
+        let db, auth;
+        let allLoadedBooks = [];
+        let currentBook = null;
+        let currentChapterIndex = 0;
+        let lastVisibleBook = null;
+        let isLoading = false;
+        let allBooksLoaded = false;
+        const booksPerLoad = 6;
+        const STORAGE_KEY = 'literaReaderProgress';
+        
+        const searchInput = document.getElementById('search-input');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        
+        const debounce = (func, delay) => {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        };
+        
+        const showModal = (title, message) => {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modal.classList.add('active');
+        };
+        
+        const closeModal = () => {
+            modal.classList.remove('active');
+        };
+        
+        const showSkeletonLoader = (show) => {
+            const container = document.getElementById('books-loading');
+            container.innerHTML = '';
+            if (show) {
+                container.style.display = 'grid';
+                for (let i = 0; i < booksPerLoad; i++) {
+                    const skeletonCard = document.createElement('div');
+                    skeletonCard.className = 'skeleton-card';
+                    skeletonCard.innerHTML = `
+                        <div class="skeleton skeleton-cover"></div>
+                        <div class="skeleton skeleton-title"></div>
+                        <div class="skeleton skeleton-author"></div>
+                        <div class="skeleton skeleton-genre"></div>
+                        <div class="skeleton skeleton-button"></div>
+                    `;
+                    container.appendChild(skeletonCard);
+                }
+            } else {
+                container.style.display = 'none';
+            }
+        };
+        
+        const showNoBooksMessage = (isSearchResult = false, searchTerm = '') => {
+            const container = document.getElementById('no-books-container');
+            const titleEl = document.getElementById('no-books-title');
+            const messageEl = document.getElementById('no-books-message');
+            
+            if (isSearchResult) {
+                titleEl.textContent = 'No Results Found';
+                messageEl.textContent = `Your search for "${searchTerm}" did not match any book titles.`;
+            } else {
+                titleEl.textContent = 'Library is Empty';
+                messageEl.textContent = 'There are currently no books available. Please check back later.';
+            }
+            container.style.display = 'block';
+        };
+        
+        const hideStatusMessages = () => {
+            document.getElementById('no-books-container').style.display = 'none';
+            showSkeletonLoader(false);
+            loadMoreBtn.style.display = 'none';
+        };
+        
+        async function initializeAppAndAuth() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                await signInAnonymously(auth);
+                loadMoreBooks();
+            } catch (error) {
+                console.error("Authentication Error:", error);
+                showModal('Authentication Failed', 'Could not connect to the library. Please check your internet connection and refresh the page.');
+                hideStatusMessages();
+                showNoBooksMessage();
+            }
+        }
+        
+        async function loadMoreBooks() {
+            if (isLoading || allBooksLoaded) return;
+            isLoading = true;
+            loadMoreBtn.disabled = true;
+            loadMoreBtn.textContent = 'Loading...';
+            
+            hideStatusMessages();
+            showSkeletonLoader(true);
+            
+            try {
+                const booksRef = collection(db, 'books');
+                let q = query(booksRef, orderBy('title'), limit(booksPerLoad));
+                if (lastVisibleBook) {
+                    q = query(booksRef, orderBy('title'), startAfter(lastVisibleBook), limit(booksPerLoad));
+                }
+                
+                const querySnapshot = await getDocs(q);
+                lastVisibleBook = querySnapshot.docs[querySnapshot.docs.length - 1];
+                
+                if (querySnapshot.docs.length < booksPerLoad) {
+                    allBooksLoaded = true;
+                }
+                
+                const newBooks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allLoadedBooks.push(...newBooks);
+                appendBooksToGrid(newBooks);
+            } catch (error) {
+                console.error('Error loading books:', error);
+                showModal('Error', 'Could not load new books. Please try again later.');
+            } finally {
+                isLoading = false;
+                showSkeletonLoader(false);
+                loadMoreBtn.disabled = false;
+                loadMoreBtn.textContent = 'Load More';
+                
+                if (allLoadedBooks.length === 0) {
+                    showNoBooksMessage();
+                } else if (!allBooksLoaded) {
+                    loadMoreBtn.style.display = 'block';
+                }
+            }
+        }
+        
+        async function performSearch(searchTerm) {
+            if (isLoading) return;
+            isLoading = true;
+            document.getElementById('books-container').innerHTML = '';
+            hideStatusMessages();
+            showSkeletonLoader(true);
+            
+            try {
+                const booksRef = collection(db, 'books');
+                const searchTermLower = searchTerm.toLowerCase();
+                const q = query(
+                    booksRef,
+                    orderBy('title_lowercase'),
+                    startAt(searchTermLower),
+                    endAt(searchTermLower + '\uf8ff'),
+                    limit(20)
+                );
+                
+                const querySnapshot = await getDocs(q);
+                const searchResults = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                document.getElementById('books-container').innerHTML = '';
+                if (searchResults.length === 0) {
+                    showNoBooksMessage(true, searchTerm);
+                } else {
+                    appendBooksToGrid(searchResults);
+                }
+                
+            } catch (error) {
+                console.error('Error performing search:', error);
+                showModal('Search Error', 'An error occurred while searching. Please try again.');
+                showNoBooksMessage(true, searchTerm);
+            } finally {
+                isLoading = false;
+                showSkeletonLoader(false);
+            }
+        }
+        
+        function resetToLibraryView() {
+            document.getElementById('books-container').innerHTML = '';
+            hideStatusMessages();
+            appendBooksToGrid(allLoadedBooks);
+            if (!allBooksLoaded && allLoadedBooks.length > 0) {
+                loadMoreBtn.style.display = 'block';
+            } else if (allLoadedBooks.length === 0) {
+                loadMoreBooks();
+            }
+        }
+        
+        function appendBooksToGrid(booksToAppend) {
+            const container = document.getElementById('books-container');
+            const progressData = getReadingProgress();
+            
+            booksToAppend.forEach(book => {
+                const bookProgress = progressData[book.id];
+                const totalChapters = book.chapterCount || 0;
+                let progressPercentage = 0;
+                if (bookProgress && totalChapters > 0) {
+                    progressPercentage = Math.round(((bookProgress.chapterIndex + 1) / totalChapters) * 100);
+                }
+                
+                const bookCard = document.createElement('div');
+                bookCard.className = 'book-card';
+                bookCard.onclick = () => openBook(book.id);
+                
+                bookCard.innerHTML = `
+                    <img src="${book.coverUrl || 'https://placehold.co/600x800/282A36/F8F8F2?text=No+Cover'}" onerror="this.onerror=null;this.src='https://placehold.co/600x800/282A36/F8F8F2?text=No+Cover';" alt="${book.title}" class="book-cover"/>       
+                    <div>
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-author">by ${book.author}</div>
+                        <div class="book-genre">${book.genre}</div>
+                    </div>
+                    <div class="book-progress">
+                        ${bookProgress && totalChapters > 0 ? `Reading: ${progressPercentage}% (Ch. ${bookProgress.chapterIndex + 1}/${totalChapters})` : (totalChapters > 0 ? 'Not Started' : 'No Chapters Available')}
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${progressPercentage}%"></div></div>
+                    </div>
+                    <div class="book-actions">
+                        <button class="btn btn-small" onclick="event.stopPropagation(); openBook('${book.id}')" ${totalChapters === 0 ? 'disabled' : ''}>
+                            ${bookProgress ? 'Continue' : 'Start Reading'}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(bookCard);
+            });
+        }
+        
+        const getReadingProgress = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        const saveReadingProgress = (bookId, chapterIndex) => {
+            const progress = getReadingProgress();
+            progress[bookId] = { chapterIndex, lastRead: new Date().toISOString() };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+        };
+        
+        window.openBook = async (bookId) => {
+            try {
+                let bookToOpen = allLoadedBooks.find(b => b.id === bookId);
+                
+                if (!bookToOpen) {
+                    const docRef = doc(db, 'books', bookId);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) bookToOpen = { id: docSnap.id, ...docSnap.data() };
+                    else throw new Error("Book data not found.");
+                }
+                currentBook = bookToOpen;
+                
+                if (!currentBook.chapterCount || currentBook.chapterCount === 0) {
+                    showModal('No Content', 'This book has no chapters available to read yet.');
+                    return;
+                }
+                
+                const progress = getReadingProgress()[bookId];
+                currentChapterIndex = progress ? progress.chapterIndex : 0;
+                
+                document.getElementById('library-view').style.display = 'none';
+                document.getElementById('reading-view').style.display = 'grid';
+                document.body.classList.add('reading-mode');
+                document.getElementById('reading-book-title').textContent = currentBook.title;
+                document.getElementById('reading-book-author').textContent = `by ${currentBook.author}`;
+                
+                displayCurrentChapter();
+            } catch (error) {
+                console.error("Error opening book:", error);
+                showModal('Error', 'Could not load the book. Please try again.');
+            }
+        };
+        
+        async function displayCurrentChapter() {
+            if (!currentBook || currentChapterIndex < 0 || currentChapterIndex >= currentBook.chapterCount) return;
+            
+            const chapterContentEl = document.getElementById('chapter-content');
+            chapterContentEl.innerHTML = `
+                <div class="chapter-loading-container">
+                    <div class="spinner"></div>
+                    <div>Loading Chapter...</div>
+                </div>`;
+            
+            try {
+                const q = query(collection(db, 'chapters'), where('bookId', '==', currentBook.id), where('order', '==', currentChapterIndex + 1), limit(1));
+                const chapterSnapshot = await getDocs(q);
+                
+                if (chapterSnapshot.empty) throw new Error("Chapter content not found.");
+                
+                const chapter = chapterSnapshot.docs[0].data();
+                
+                document.getElementById('current-chapter-title').textContent = `Chapter ${chapter.order}: ${chapter.title}`;
+                chapterContentEl.innerHTML = chapter.content.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('');
+                
+                document.getElementById('prev-chapter-btn').disabled = currentChapterIndex === 0;
+                document.getElementById('next-chapter-btn').disabled = currentChapterIndex >= currentBook.chapterCount - 1;
+                
+                saveReadingProgress(currentBook.id, currentChapterIndex);
+                scrollIndicator.style.width = '0%';
+                chapterContentEl.scrollTop = 0;
+                
+            } catch (error) {
+                console.error("Error displaying chapter:", error);
+                chapterContentEl.innerHTML = '<p style="text-align: center;">Error loading chapter content. Please try again.</p>';
+                showModal('Chapter Error', 'Could not load chapter content.');
+            }
+        }
+        
+        window.previousChapter = () => {
+            if (currentChapterIndex > 0) {
+                currentChapterIndex--;
+                displayCurrentChapter();
+            }
+        };
+        window.nextChapter = () => {
+            if (currentChapterIndex < currentBook.chapterCount - 1) {
+                currentChapterIndex++;
+                displayCurrentChapter();
+            }
+        };
+        
+        window.closeReader = () => {
+            scrollIndicator.style.width = '0';
+            document.getElementById('reading-view').style.display = 'none';
+            document.getElementById('library-view').style.display = 'block';
+            document.body.classList.remove('reading-mode');
+            if (searchInput.value.trim().length === 0) {
+                document.getElementById('books-container').innerHTML = '';
+                appendBooksToGrid(allLoadedBooks);
+            }
+        };
+        
+        loadMoreBtn.addEventListener('click', loadMoreBooks);
+        searchInput.addEventListener('input', debounce(e => {
+            const searchTerm = e.target.value.trim();
+            if (searchTerm.length > 0) performSearch(searchTerm);
+            else resetToLibraryView();
+        }, 500));
+        modalCloseBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        
+        const chapterContentEl = document.getElementById('chapter-content');
+        const scrollIndicator = document.getElementById('scroll-indicator');
+        
+        chapterContentEl.addEventListener('scroll', () => {
+            const scrollableHeight = chapterContentEl.scrollHeight - chapterContentEl.clientHeight;
+            
+            if (scrollableHeight > 0) {
+                const scrollPercentage = (chapterContentEl.scrollTop / scrollableHeight) * 100;
+                scrollIndicator.style.width = `${scrollPercentage}%`;
+            } else {
+                scrollIndicator.style.width = '0%';
+            }
+        });
+        
+        initializeAppAndAuth();
+    </script>
+</body>
+
+</html>
