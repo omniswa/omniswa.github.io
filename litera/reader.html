@@ -36,7 +36,7 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 16px;
+            padding: 0 12px;
         }
         
         body.reading-mode {
@@ -48,7 +48,7 @@
             border-bottom-right-radius: 12px;
             border-bottom-left-radius: 12px;
             padding: 24px;
-            margin-bottom: 24px;
+            margin-bottom: 14px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
             display: flex;
             justify-content: space-between;
@@ -107,7 +107,6 @@
         }
         
         .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(80, 250, 123, 0.3);
         }
         
@@ -268,8 +267,7 @@
         
         .chapter-content p {
             text-align: justify;
-            margin-bottom: 1.5rem;
-            font-size: 1rem;
+            margin-bottom: 1.4rem;
             line-height: 1.8;
             color: #dcdcdc;
         }
@@ -358,15 +356,14 @@
         }
         
         .chapter-loading-container {
-            display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100%;
+            justify-items: center;
             flex-direction: column;
-            gap: 16px;
+            display: flex;
         }
         
         .spinner {
+            margin: auto;
             width: 56px;
             height: 56px;
             border-radius: 50%;
@@ -484,9 +481,16 @@
             }
             
             .reading-header,
-            .chapter-nav,
-            .chapter-content {
+            .chapter-nav {
                 padding: 20px;
+            }
+            
+            .chapter-title {
+                font-size: 0.8rem;
+            }
+            
+            .chapter-content {
+                padding: 32px;
             }
             
             .reading-header {
@@ -533,7 +537,7 @@
                     <p id="reading-book-author"></p>
                 </div>
                 <div class="reading-controls">
-                    <button class="btn btn-secondary" onclick="closeReader()">← Back to Library</button>
+                    <button class="btn btn-secondary" onclick="closeReader()">‹ Back to Library</button>
                 </div>
             </header>
             
@@ -587,7 +591,7 @@
         let lastVisibleBook = null;
         let isLoading = false;
         let allBooksLoaded = false;
-        const booksPerLoad = 6;
+        const booksPerLoad = 4;
         const STORAGE_KEY = 'literaReaderProgress';
         
         const searchInput = document.getElementById('search-input');
@@ -643,7 +647,7 @@
             const messageEl = document.getElementById('no-books-message');
             
             if (isSearchResult) {
-                titleEl.textContent = 'No Results Found';
+                titleEl.textContent = 'Nothing Found';
                 messageEl.textContent = `Your search for "${searchTerm}" did not match any book titles.`;
             } else {
                 titleEl.textContent = 'Library is Empty';
@@ -803,9 +807,13 @@
         }
         
         const getReadingProgress = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-        const saveReadingProgress = (bookId, chapterIndex) => {
+        const saveReadingProgress = (bookId, chapterIndex, scrollTop = 0) => {
             const progress = getReadingProgress();
-            progress[bookId] = { chapterIndex, lastRead: new Date().toISOString() };
+            progress[bookId] = {
+                chapterIndex,
+                scrollTop,
+                lastRead: new Date().toISOString()
+            };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
         };
         
@@ -819,6 +827,7 @@
                     if (docSnap.exists()) bookToOpen = { id: docSnap.id, ...docSnap.data() };
                     else throw new Error("Book data not found.");
                 }
+                
                 currentBook = bookToOpen;
                 
                 if (!currentBook.chapterCount || currentBook.chapterCount === 0) {
@@ -844,11 +853,10 @@
         
         async function displayCurrentChapter() {
             if (!currentBook || currentChapterIndex < 0 || currentChapterIndex >= currentBook.chapterCount) return;
-            
             const chapterContentEl = document.getElementById('chapter-content');
             chapterContentEl.innerHTML = `
                 <div class="chapter-loading-container">
-                    <div class="spinner"></div>
+                    <div class="spinner"></div> 
                     <div>Loading Chapter...</div>
                 </div>`;
             
@@ -859,16 +867,31 @@
                 if (chapterSnapshot.empty) throw new Error("Chapter content not found.");
                 
                 const chapter = chapterSnapshot.docs[0].data();
-                
-                document.getElementById('current-chapter-title').textContent = `Chapter ${chapter.order}: ${chapter.title}`;
+                document.getElementById('current-chapter-title').textContent = `${chapter.title}`;
                 chapterContentEl.innerHTML = chapter.content.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('');
                 
                 document.getElementById('prev-chapter-btn').disabled = currentChapterIndex === 0;
                 document.getElementById('next-chapter-btn').disabled = currentChapterIndex >= currentBook.chapterCount - 1;
                 
-                saveReadingProgress(currentBook.id, currentChapterIndex);
-                scrollIndicator.style.width = '0%';
-                chapterContentEl.scrollTop = 0;
+                const progress = getReadingProgress()[currentBook.id];
+                let scrollTop = 0;
+                
+                if (progress && progress.chapterIndex === currentChapterIndex && progress.scrollTop) {
+                    scrollTop = progress.scrollTop;
+                }
+                
+                chapterContentEl.scrollTop = scrollTop;
+                
+                saveReadingProgress(currentBook.id, currentChapterIndex, scrollTop);
+                
+                const scrollableHeight = chapterContentEl.scrollHeight - chapterContentEl.clientHeight;
+                const scrollIndicator = document.getElementById('scroll-indicator');
+                if (scrollableHeight > 0) {
+                    const scrollPercentage = (scrollTop / scrollableHeight) * 100;
+                    scrollIndicator.style.width = `${scrollPercentage}%`;
+                } else {
+                    scrollIndicator.style.width = '0%';
+                }
                 
             } catch (error) {
                 console.error("Error displaying chapter:", error);
@@ -883,6 +906,7 @@
                 displayCurrentChapter();
             }
         };
+        
         window.nextChapter = () => {
             if (currentChapterIndex < currentBook.chapterCount - 1) {
                 currentChapterIndex++;
@@ -907,6 +931,7 @@
             if (searchTerm.length > 0) performSearch(searchTerm);
             else resetToLibraryView();
         }, 500));
+        
         modalCloseBtn.addEventListener('click', closeModal);
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
@@ -917,12 +942,19 @@
         
         chapterContentEl.addEventListener('scroll', () => {
             const scrollableHeight = chapterContentEl.scrollHeight - chapterContentEl.clientHeight;
+            let scrollPercentage = 0;
             
             if (scrollableHeight > 0) {
-                const scrollPercentage = (chapterContentEl.scrollTop / scrollableHeight) * 100;
+                scrollPercentage = (chapterContentEl.scrollTop / scrollableHeight) * 100;
                 scrollIndicator.style.width = `${scrollPercentage}%`;
             } else {
                 scrollIndicator.style.width = '0%';
+            }
+            
+            if (currentBook) {
+                debounce(() => {
+                    saveReadingProgress(currentBook.id, currentChapterIndex, chapterContentEl.scrollTop);
+                }, 500)();
             }
         });
         
