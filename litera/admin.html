@@ -913,7 +913,7 @@
         function createChapterItem(chapter) {
             const chapterItem = document.createElement('div');
             chapterItem.className = 'chapter-item';
-            chapterItem.innerHTML = `<div class="chapter-info"><h4>Chapter ${chapter.order}: ${chapter.title}</h4><p>${chapter.content ? chapter.content.substring(0, 100) + (chapter.content.length > 100 ? '...' : '') : 'No content preview'}</p></div><div class="chapter-actions"><button class="btn btn-small" onclick="editChapter('${chapter.id}')">Edit</button><button class="btn btn-danger btn-small" onclick="deleteChapter('${chapter.id}')">Delete</button></div>`;
+            chapterItem.innerHTML = `<div class="chapter-info"><h4>${chapter.title}</h4><p>${chapter.content ? chapter.content.substring(0, 100) + (chapter.content.length > 100 ? '...' : '') : 'No content preview'}</p></div><div class="chapter-actions"><button class="btn btn-small" onclick="editChapter('${chapter.id}')">Edit</button><button class="btn btn-danger btn-small" onclick="deleteChapter('${chapter.id}')">Delete</button></div>`;
             return chapterItem;
         }
         
