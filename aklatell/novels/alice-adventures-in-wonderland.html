@@ -12,27 +12,21 @@
 	<meta name="keywords" content="Alice's Adventures in Wonderland full text, Lewis Carroll novel, Alice in Wonderland public domain, Alice in Wonderland online, classic literature, children's literature, Alice, White Rabbit, Cheshire Cat, Queen of Hearts, public domain books, Aklatell" />
 	<meta name="author" content="Lewis Carroll" />
 	<meta name="robots" content="index, follow" />
-	<link rel="stylesheet" href="../style.css">
-	<script src="../script.js" defer></script>
+	
+	<!-- Load full CSS asynchronously -->
+	<link rel="preload" href="../novels.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+	<noscript>
+		<link rel="stylesheet" href="../novels.css">
+	</noscript>
+	
+	<!-- Preload font -->
+	<link rel="preload" href="../newsreader.ttf" as="font" type="font/ttf" crossorigin>
+	
+	<!-- Defer JavaScript -->
+	<script src="../novels.js" defer></script>
 </head>
 
 <body>
-	<!-- Floating Controls -->
-	<div class="floating-controls">
-		<button class="control-btn" id="mainControlBtn" aria-label="Menu">☰</button>
-		
-		<div class="control-menu" id="controlMenu">
-			<button class="control-item" id="homeBtn" aria-label="Home">🏠</button>
-			<button class="control-item" id="themeBtn" aria-label="Toggle Theme">🌙</button>
-		</div>
-	</div>
-	
-	<!-- Progress Bar -->
-	<div id="progressBarContainer">
-		<div id="progressBar"></div>
-	</div>
-	
-	<button id="backToTop" aria-label="Back to Top">↑</button>
 	
 	<section class="chapter" id="halftitlepage" epub:type="halftitlepage frontmatter">
 		<h1 epub:type="fulltitle">Alice's Adventures in Wonderland <br /> by Lewis Carroll</h1>
@@ -3963,7 +3957,7 @@
 			pleasure in all their simple joys, remembering her own child-life, and the
 			happy summer days.
 		</p>
-		<h5>THE END </h5>
+		<h3>THE END </h3>
 	</div><!--end chapter-->
 </body>
 

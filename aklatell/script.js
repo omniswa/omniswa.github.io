@@ -1,112 +1,220 @@
-/* ========= Expandable Controls Menu ========= */
-const mainControlBtn = document.getElementById("mainControlBtn");
-const controlMenu = document.getElementById("controlMenu");
+// State management
+let favorites = [];
+let currentBooks = [...books];
+let currentFilter = 'all';
 
-mainControlBtn.addEventListener("click", () => {
-  controlMenu.classList.toggle("open");
-});
-
-/* Close menu if clicking outside */
-document.addEventListener("click", (e) => {
-  if (!e.target.closest(".floating-controls")) {
-    controlMenu.classList.remove("open");
+// Initialize from localStorage
+const initStorage = () => {
+  try {
+    // Load favorites from localStorage
+    const storedFavorites = localStorage.getItem('aklatell_favorites');
+    if (storedFavorites) {
+      favorites = JSON.parse(storedFavorites);
+    }
+  } catch (e) {
+    console.error('Error loading favorites:', e);
+    favorites = [];
   }
-});
-
-/* ========= Theme Management ========= */
-const themeBtn = document.getElementById('themeBtn');
-const html = document.documentElement;
-
-function initTheme() {
-  const saved = localStorage.getItem("theme");
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   
-  if (saved) {
-    setTheme(saved);
+  try {
+    // Load theme preference from localStorage
+    const storedTheme = localStorage.getItem('aklatell_theme');
+    if (storedTheme === 'dark') {
+      document.body.classList.add('dark-mode');
+      document.getElementById('themeToggle').textContent = '☀️';
+    }
+  } catch (e) {
+    console.error('Error loading theme:', e);
+  }
+};
+
+// Save favorites to localStorage
+const saveFavorites = () => {
+  try {
+    localStorage.setItem('aklatell_favorites', JSON.stringify(favorites));
+  } catch (e) {
+    console.error('Error saving favorites:', e);
+  }
+};
+
+// Save theme to localStorage
+const saveTheme = (isDark) => {
+  try {
+    localStorage.setItem('aklatell_theme', isDark ? 'dark' : 'light');
+  } catch (e) {
+    console.error('Error saving theme:', e);
+  }
+};
+
+// Theme toggle
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  themeToggle.textContent = isDark ? '☀️' : '🌙';
+  saveTheme(isDark);
+});
+
+// Menu modal
+const menuBtn = document.getElementById('menuBtn');
+const menuModal = document.getElementById('menuModal');
+const closeModal = document.getElementById('closeModal');
+
+menuBtn.addEventListener('click', () => {
+  menuModal.classList.add('active');
+});
+
+closeModal.addEventListener('click', () => {
+  menuModal.classList.remove('active');
+});
+
+menuModal.addEventListener('click', (e) => {
+  if (e.target === menuModal) {
+    menuModal.classList.remove('active');
+  }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && menuModal.classList.contains('active')) {
+    menuModal.classList.remove('active');
+  }
+});
+
+// Favorites management
+const toggleFavorite = (bookId, event) => {
+  event.stopPropagation();
+  const index = favorites.indexOf(bookId);
+  
+  if (index > -1) {
+    favorites.splice(index, 1);
   } else {
-    setTheme(prefersDark ? "dark" : "light");
+    favorites.push(bookId);
   }
-}
+  
+  saveFavorites();
+  updateFavCount();
+  renderBooks(currentBooks);
+};
 
-function setTheme(theme) {
-  html.setAttribute("data-theme", theme);
-  themeBtn.textContent = theme === "dark" ? "☀️" : "🌙";
-  localStorage.setItem("theme", theme);
-}
+const isFavorite = (bookId) => {
+  return favorites.includes(bookId);
+};
 
-themeBtn.addEventListener("click", () => {
-  setTheme(html.getAttribute("data-theme") === "dark" ? "light" : "dark");
-});
-
-/* Sync with system changes */
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener("change", e => {
-  if (!localStorage.getItem("theme")) {
-    setTheme(e.matches ? "dark" : "light");
+// Render books with virtual scrolling optimization
+const renderBooks = (booksToRender) => {
+  const grid = document.getElementById('booksGrid');
+  
+  // Filter by favorites if needed
+  let displayBooks = booksToRender;
+  if (currentFilter === 'favorites') {
+    displayBooks = booksToRender.filter(book => isFavorite(book.id));
   }
-});
-
-/* ========= Home Button ========= */
-const homeBtn = document.getElementById("homeBtn");
-homeBtn.addEventListener("click", () => {
-  window.location.href = "../index.html";
-});
-
-/* ========= Reading Progress ========= */
-const bookKey = "progress_" + location.pathname.split("/").pop();
-
-window.addEventListener("load", () => {
-  const saved = parseFloat(localStorage.getItem(bookKey));
-  if (!isNaN(saved)) window.scrollTo(0, saved);
-  initTheme();
-});
-
-/* Debounced scroll saving */
-let timeout;
-window.addEventListener("scroll", () => {
-  clearTimeout(timeout);
-  timeout = setTimeout(() => {
-    localStorage.setItem(bookKey, window.scrollY);
-  }, 80);
-});
-
-/* ========= Progress Bar ========= */
-const progressBar = document.getElementById("progressBar");
-
-function updateProgress() {
-  const h = document.documentElement.scrollHeight - innerHeight;
-  progressBar.style.width = (scrollY / h * 100) + "%";
-}
-
-window.addEventListener("scroll", updateProgress);
-window.addEventListener("load", updateProgress);
-
-/* ========= Smooth anchor scrolling ========= */
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener("click", (e) => {
-    e.preventDefault();
-    document.querySelector(a.getAttribute("href"))?.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
+  
+  if (displayBooks.length === 0) {
+    grid.innerHTML = '<div class="no-results">📖 No books found. Try a different search!</div>';
+    return;
+  }
+  
+  // Use DocumentFragment for better performance
+  const fragment = document.createDocumentFragment();
+  
+  displayBooks.forEach(book => {
+    const bookCard = document.createElement('div');
+    bookCard.className = 'book-card';
+    bookCard.innerHTML = `
+      <button class="favorite-btn ${isFavorite(book.id) ? 'active' : ''}" 
+              data-book-id="${book.id}"
+              aria-label="Toggle favorite">
+        ${isFavorite(book.id) ? '❤️' : '🤍'}
+      </button>
+      <span class="book-emoji">${book.emoji}</span>
+      <h3 class="book-title">${book.title}</h3>
+      <p class="book-author">by ${book.author}</p>
+      <p class="book-preview">${book.preview}</p>
+    `;
+    
+    // Add click handler for navigation
+    bookCard.addEventListener('click', (e) => {
+      if (!e.target.closest('.favorite-btn')) {
+        window.location.href = book.link;
+      }
+    });
+    
+    fragment.appendChild(bookCard);
+  });
+  
+  // Clear and append in one operation
+  grid.innerHTML = '';
+  grid.appendChild(fragment);
+  
+  // Attach favorite button listeners
+  document.querySelectorAll('.favorite-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const bookId = parseInt(btn.dataset.bookId);
+      toggleFavorite(bookId, e);
     });
   });
+};
+
+// Debounced search for performance
+let searchTimeout;
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', (e) => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    const searchTerm = e.target.value.toLowerCase();
+    currentBooks = books.filter(book =>
+      book.title.toLowerCase().includes(searchTerm) ||
+      book.author.toLowerCase().includes(searchTerm)
+    );
+    renderBooks(currentBooks);
+  }, 150);
 });
 
-/* ========= Back to Top Button ========= */
-const backToTop = document.getElementById("backToTop");
-
-// Show button when scrolled down 500px
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 500) {
-    backToTop.classList.add("show");
-  } else {
-    backToTop.classList.remove("show");
+// Sort
+const sortSelect = document.getElementById('sortSelect');
+sortSelect.addEventListener('change', (e) => {
+  const sortBy = e.target.value;
+  
+  if (sortBy === 'title') {
+    currentBooks.sort((a, b) => a.title.localeCompare(b.title));
+  } else if (sortBy === 'author') {
+    currentBooks.sort((a, b) => a.author.localeCompare(b.author));
+  } else if (sortBy === 'newest') {
+    currentBooks.sort((a, b) => b.id - a.id);
   }
+  
+  renderBooks(currentBooks);
 });
 
-// Smooth scroll to top
-backToTop.addEventListener("click", () => {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
+// Filter tabs
+const filterTabs = document.querySelectorAll('.filter-tab');
+filterTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    filterTabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentFilter = tab.dataset.filter;
+    renderBooks(currentBooks);
   });
 });
+
+// Favorites button
+const favoriteBtn = document.getElementById('favoriteBtn');
+favoriteBtn.addEventListener('click', () => {
+  const favTab = document.querySelector('[data-filter="favorites"]');
+  filterTabs.forEach(t => t.classList.remove('active'));
+  favTab.classList.add('active');
+  currentFilter = 'favorites';
+  renderBooks(currentBooks);
+});
+
+// Update favorites count
+const updateFavCount = () => {
+  document.getElementById('favCount').textContent = favorites.length;
+};
+
+// Initialize
+initStorage();
+updateFavCount();
+renderBooks(currentBooks);

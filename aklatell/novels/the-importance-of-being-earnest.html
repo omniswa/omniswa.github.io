@@ -12,28 +12,21 @@
   <meta name="keywords" content="The Importance of Being Earnest full text, Oscar Wilde play, Earnest public domain, classic comedy, Victorian drama, Jack Worthing, Algernon Moncrieff, 1895 play, public domain books, Aklatell" />
   <meta name="author" content="Oscar Wilde" />
   <meta name="robots" content="index, follow" />
-  <link rel="stylesheet" href="../style.css">
-  <script src="../script.js" defer></script>
+  
+  <!-- Load full CSS asynchronously -->
+  <link rel="preload" href="../novels.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="../novels.css">
+  </noscript>
+  
+  <!-- Preload font -->
+  <link rel="preload" href="../newsreader.ttf" as="font" type="font/ttf" crossorigin>
+  
+  <!-- Defer JavaScript -->
+  <script src="../novels.js" defer></script>
 </head>
 
 <body>
-  <!-- Floating Controls -->
-  <div class="floating-controls">
-    <button class="control-btn" id="mainControlBtn" aria-label="Menu">☰</button>
-    
-    <div class="control-menu" id="controlMenu">
-      <button class="control-item" id="homeBtn" aria-label="Home">🏠</button>
-      <button class="control-item" id="themeBtn" aria-label="Toggle Theme">🌙</button>
-    </div>
-  </div>
-  
-  <!-- Progress Bar -->
-  <div id="progressBarContainer">
-    <div id="progressBar"></div>
-  </div>
-  
-  <button id="backToTop" aria-label="Back to Top">↑</button>
-  
   <section class="chapter" id="halftitlepage" epub:type="halftitlepage frontmatter">
     <h1 epub:type="fulltitle">The Importance of Being Earnest <br /> by Oscar Wilde</h1>
   </section>
