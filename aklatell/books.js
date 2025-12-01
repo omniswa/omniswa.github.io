@@ -1,0 +1,37 @@
+const books = [
+{
+  id: 1,
+  title: "A Room With a View",
+  author: "F. Scott Fitzgerald",
+  genre: "Fiction",
+  emoji: "📕",
+  link: "novels/a-room-with-a-view.html",
+  preview: "A tale of wealth, love, and the American Dream in the Jazz Age.",
+},
+{
+  id: 2,
+  title: "Alice's Adventures in Wonderland",
+  author: "Harper Lee",
+  genre: "Fiction",
+  emoji: "📘",
+  link: "novels/alice-adventures-in-wonderland.html",
+  preview: "A powerful story of racial injustice and childhood innocence.",
+},
+{
+  id: 3,
+  title: "Frankenstein; or, The Modern Prometheus by Mary Shelley",
+  author: "Harper Lee",
+  genre: "Fiction",
+  emoji: "📘",
+  link: "novels/frankenstein.html",
+  preview: "A powerful story of racial injustice and childhood innocence.",
+},
+{
+  id: 4,
+  title: "Romeo and Juliet",
+  author: "Harper Lee",
+  genre: "Fiction",
+  emoji: "📘",
+  link: "novels/romeo-and-juliet.html",
+  preview: "A powerful story of racial injustice and childhood innocence.",
+}];

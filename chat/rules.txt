@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidMessage() {
+      return request.resource.data.userId == request.auth.uid &&
+             request.resource.data.text.size() > 0 &&
+             request.resource.data.text.size() <= 2000;
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if request.auth != null && 
+                    request.auth.uid == userId &&
+                    // Ensure usernameLower is set during creation
+                    request.resource.data.usernameLower is string;
+      allow update: if request.auth != null && 
+                    (request.auth.uid == userId || isAdmin()) &&
+                    // Prevent changing usernameLower after creation
+                    (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['usernameLower']));
+      allow delete: if request.auth != null && isAdmin();
+    }
+
+    match /messages/{messageId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && isValidMessage();
+      allow update, delete: if request.auth != null && 
+                           (resource.data.userId == request.auth.uid || isAdmin());
+    }
+  }
+}

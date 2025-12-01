@@ -1,0 +1,314 @@
+/* ======== CSS Variables for Theming ======== */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #efefef;
+  --text-primary: #222;
+  --text-secondary: #555;
+  --accent: #e2beaa;
+  --accent-hover: #ffdac6;
+  --border: rgba(0, 0, 0, 0.1);
+  --shadow: rgba(0, 0, 0, 0.1);
+  --code-bg: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --text-primary: #eaeaea;
+  --text-secondary: #b0b0b0;
+  --accent: #a78bfa;
+  --accent-hover: #8b5cf6;
+  --border: rgba(255, 255, 255, 0.1);
+  --shadow: rgba(0, 0, 0, 0.3);
+  --code-bg: rgba(255, 255, 255, 0.05);
+}
+
+/* ======== Global Layout ======== */
+@font-face {
+  font-family: "newsreader";
+  src: url(newsreader.ttf);
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  font-family: "Newsreader", serif;
+  margin: 0;
+  padding: 2.4rem 2rem;
+  padding-top: 4rem;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.7;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ===== Floating Controls (Expandable Menu) ===== */
+.floating-controls {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10000;
+}
+
+#mainControlBtn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px var(--shadow);
+  transition: all 0.25s ease;
+}
+
+#mainControlBtn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+}
+
+.control-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.25s ease;
+}
+
+.control-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.control-item {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 12px var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.control-item:hover {
+  background: var(--accent-hover);
+}
+
+/* Small screens */
+@media (max-width: 640px) {
+  #mainControlBtn {
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
+  }
+  
+  .control-item {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* ======== Reading Progress Bar ======== */
+#progressBarContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  z-index: 9999;
+}
+
+#progressBar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.15s linear;
+}
+
+/* ======== Chapter Headings ======== */
+.chapter h2 {
+  text-align: center;
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  letter-spacing: 1px;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.chapter h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ======== Paragraphs ======== */
+p {
+  font-size: 1.12rem;
+  text-align: justify;
+  margin: 1.2rem 0;
+  color: var(--text-primary);
+}
+
+p i {
+  color: var(--text-secondary);
+}
+
+.noindent {
+  text-indent: 0;
+}
+
+.center {
+  text-align: center;
+}
+
+/* Asterism breaks */
+.asterism {
+  text-align: center;
+  letter-spacing: 6px;
+  font-size: 1.3rem;
+  overflow-x: auto;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+/* ======== Poem Formatting ======== */
+.poem,
+blockquote {
+  padding: 0 1.4rem;
+  text-align: left;
+  font-style: italic;
+  overflow-x: auto;
+  background: var(--code-bg);
+  border-radius: 8px;
+  border-left: 4px solid var(--accent);
+  margin-bottom: 1.5rem;
+}
+
+/* ======== Preformatted ======== */
+pre {
+  background: var(--code-bg);
+  border-radius: 8px;
+  padding: 1.4rem;
+  overflow-x: auto;
+  font-size: 0.95rem;
+  border-left: 4px solid var(--accent);
+}
+
+/* ======== Chapter Navigation ======== */
+h5 {
+  text-align: center;
+  margin: 3rem 0 2rem 0;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+}
+
+hr {
+  border: none;
+  border-top: 2px solid var(--border);
+  margin: 2rem 0;
+}
+
+/* ======== Responsive Design ======== */
+@media (max-width: 640px) {
+  body {
+    padding: 2rem 1rem;
+    padding-top: 4rem;
+    font-size: 16px;
+  }
+  
+  .chapter h2 {
+    font-size: 1.5rem;
+  }
+  
+  .floating-controls {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+  
+  .control-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 1rem;
+  }
+}
+
+/* ======== Smooth Scroll ======== */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ======== Selection Styling ======== */
+::selection {
+  background: var(--accent);
+  color: white;
+}
+
+/* ===== Back to Top Button ===== */
+#backToTop {
+  position: fixed;
+  right: 1rem;
+  bottom: 1.5rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px var(--shadow);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  z-index: 9000;
+}
+
+#backToTop:hover {
+  background: var(--accent-hover);
+  transform: translateY(-3px);
+}
+
+/* Show only when scrolled */
+#backToTop.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  #backToTop {
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
+    bottom: 1rem;
+    right: 1rem;
+  }
+}

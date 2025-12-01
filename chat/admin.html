@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <title>Admin Dashboard - ChatApp</title>
+  <style>
+    .admin-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .chat-header {
+      margin-bottom: 20px;
+    }
+    
+    .dashboard-grid {
+      display: grid;
+      align-items: center;
+      margin-top: 20px;
+      gap: 20px;
+    }
+    
+    .card {
+      display: grid;
+      width: 100%;
+      align-items: center;
+      background: var(--bg-secondary);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .stat-card {
+      background: var(--bg-secondary);
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+    
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+    
+    .danger-zone {
+      border-color: #ff4444;
+    }
+    
+    .danger-title {
+      color: #ff4444;
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: block;
+    }
+    
+    .search-box {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    
+    th,
+    td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    th {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    .user-row img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    
+    .badge {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      background: var(--primary-color);
+      color: white;
+    }
+    
+    .badge.admin {
+      background: #ffb700;
+      color: black;
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .pagination button {
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-primary);
+    }
+    
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .cost-tip {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 15px;
+      margin-bottom: 15px;
+      color: #856404;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="admin-container">
+    <header class="chat-header">
+      <h2>🛡️ Admin Dashboard</h2>
+      <div class="user-info">
+        <span id="adminName">Loading...</span>
+        <a href="chat.html" class="btn" style="text-decoration: none; font-size: 0.9rem;">Go to Chat</a>
+      </div>
+    </header>
+    
+    <div id="loadingState" class="loading-state">
+      <div class="spinner"></div>
+      <p>Verifying privileges...</p>
+    </div>
+    
+    <div id="adminContent" class="hidden">
+      <!-- Statistics Dashboard -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="totalUsers">0</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalMessages">0</div>
+          <div class="stat-label">Total Messages</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="adminCount">0</div>
+          <div class="stat-label">Admins</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="messagesThisWeek">0</div>
+          <div class="stat-label">Messages (7 days)</div>
+        </div>
+      </div>
+      
+      <div class="dashboard-grid">
+        <!-- User Management with Pagination -->
+        <div class="card" style="grid-column: 1 / -1;">
+          <h3>User Management</h3>
+          <div class="cost-tip">
+            💡 <strong>Cost-Saving Tip:</strong> Users are loaded in pages of 10 to minimize read operations. Use search to find specific users.
+          </div>
+          <input type="text" id="userSearch" class="search-box" placeholder="Search by username or email...">
+          <div style="max-height: 500px; overflow-y: auto;">
+            <table id="usersTable">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersList"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <button id="prevPage" disabled>← Previous</button>
+            <span id="pageInfo">Page 1</span>
+            <button id="nextPage">Next →</button>
+          </div>
+        </div>
+        
+        <!-- Database Cleanup -->
+        <div class="card danger-zone">
+          <span class="danger-title">⚠️ Danger Zone</span>
+          <h3>Database Cleanup</h3>
+          <p style="color: var(--text-secondary); margin-bottom: 15px;">
+            Delete messages older than specified days to save storage costs.
+            This action cannot be undone.
+          </p>
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px;">Delete messages older than:</label>
+            <select id="cleanupDays" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+              <option value="7">7 days</option>
+              <option value="14">14 days</option>
+              <option value="30" selected>30 days</option>
+              <option value="60">60 days</option>
+              <option value="90">90 days</option>
+            </select>
+          </div>
+          <div id="cleanupStatus" style="margin-bottom: 10px; font-size: 0.9rem;"></div>
+          <button id="cleanupBtn" class="btn" style="background-color: #ff4444; width: 100%;">
+            Delete Old Messages
+          </button>
+        </div>
+        
+        <!-- Bulk Operations -->
+        <div class="card">
+          <h3>Bulk Operations</h3>
+          <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">
+            Batch operations to manage data efficiently
+          </p>
+          <button id="deleteEmptyUsersBtn" class="btn" style="width: 100%; margin-bottom: 10px;">
+            Delete Users With No Messages
+          </button>
+          <button id="cleanupDeletedMessagesBtn" class="btn" style="width: 100%;">
+            Remove Deleted Messages
+          </button>
+          <div id="bulkStatus" style="margin-top: 10px; font-size: 0.9rem;"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="accessDenied" class="hidden empty-state">
+      <h3>Access Denied</h3>
+      <p>You do not have permission to view this page.</p>
+      <a href="chat.html" class="btn">Return to Chat</a>
+    </div>
+  </div>
+  
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCX2rt16v6nM6zeJkAZTkeiJmMzrEfHrBY",
+      authDomain: "aklatell-chat.firebaseapp.com",
+      databaseURL: "https://aklatell-chat-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "aklatell-chat",
+      storageBucket: "aklatell-chat.firebasestorage.app",
+      messagingSenderId: "717231832884",
+      appId: "1:717231832884:web:4df4a1e0fdd3fa20f7ef61",
+      measurementId: "G-27JG5D6J46"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    // Enable persistence to reduce reads
+    db.enablePersistence({ synchronizeTabs: true }).catch(err => console.warn(err));
+    
+    // DOM Elements
+    const loadingState = document.getElementById('loadingState');
+    const adminContent = document.getElementById('adminContent');
+    const accessDenied = document.getElementById('accessDenied');
+    const usersList = document.getElementById('usersList');
+    const userSearch = document.getElementById('userSearch');
+    const cleanupBtn = document.getElementById('cleanupBtn');
+    const cleanupStatus = document.getElementById('cleanupStatus');
+    const bulkStatus = document.getElementById('bulkStatus');
+    const prevPage = document.getElementById('prevPage');
+    const nextPage = document.getElementById('nextPage');
+    const pageInfo = document.getElementById('pageInfo');
+    const cleanupDays = document.getElementById('cleanupDays');
+    
+    // Pagination state
+    let currentPage = 1;
+    const USERS_PER_PAGE = 10;
+    let lastVisible = null;
+    let firstVisible = null;
+    let allUsers = [];
+    let filteredUsers = [];
+    let isSearching = false;
+    
+    // Statistics cache
+    let statsCache = {
+      totalUsers: 0,
+      totalMessages: 0,
+      adminCount: 0,
+      messagesThisWeek: 0,
+      lastUpdated: 0
+    };
+    const STATS_CACHE_DURATION = 60000; // 1 minute
+    
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
+          const userDoc = await db.collection('users').doc(user.uid).get();
+          const userData = userDoc.data();
+          
+          if (userData && userData.isAdmin === true) {
+            document.getElementById('adminName').textContent = `Admin: ${userData.username}`;
+            loadingState.classList.add('hidden');
+            adminContent.classList.remove('hidden');
+            await loadStatistics();
+            await loadUsers();
+          } else {
+            showAccessDenied();
+          }
+        } catch (error) {
+          console.error("Auth check failed", error);
+          showAccessDenied();
+        }
+      }
+    });
+    
+    function showAccessDenied() {
+      loadingState.classList.add('hidden');
+      adminContent.classList.add('hidden');
+      accessDenied.classList.remove('hidden');
+    }
+    
+    // Load statistics with caching
+    async function loadStatistics() {
+      const now = Date.now();
+      if (now - statsCache.lastUpdated < STATS_CACHE_DURATION) {
+        updateStatsDisplay();
+        return;
+      }
+      
+      try {
+        // Count users (single read)
+        const usersSnapshot = await db.collection('users').get();
+        statsCache.totalUsers = usersSnapshot.size;
+        statsCache.adminCount = usersSnapshot.docs.filter(doc => doc.data().isAdmin === true).length;
+        
+        // This costs 1/1000th of a read per 1000 documents
+        const countSnapshot = await db.collection('messages').count().get();
+        statsCache.totalMessages = countSnapshot.data().count;
+        
+        // Count messages from last 7 days
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const recentMessagesSnapshot = await db.collection('messages')
+          .where('timestamp', '>', firebase.firestore.Timestamp.fromDate(sevenDaysAgo))
+          .get();
+        statsCache.messagesThisWeek = recentMessagesSnapshot.size;
+        
+        statsCache.lastUpdated = now;
+        updateStatsDisplay();
+      } catch (error) {
+        console.error("Error loading statistics:", error);
+      }
+    }
+    
+    function updateStatsDisplay() {
+      document.getElementById('totalUsers').textContent = statsCache.totalUsers;
+      document.getElementById('totalMessages').textContent = statsCache.totalMessages + (statsCache.totalMessages >= 1000 ? '+' : '');
+      document.getElementById('adminCount').textContent = statsCache.adminCount;
+      document.getElementById('messagesThisWeek').textContent = statsCache.messagesThisWeek;
+    }
+    
+    // Load users with pagination
+    async function loadUsers(direction = 'next') {
+      usersList.innerHTML = '<tr><td colspan="5">Loading users...</td></tr>';
+      
+      try {
+        let query = db.collection('users').orderBy('createdAt', 'desc');
+        
+        if (direction === 'next' && lastVisible) {
+          query = query.startAfter(lastVisible);
+        } else if (direction === 'prev' && firstVisible) {
+          query = query.endBefore(firstVisible).limitToLast(USERS_PER_PAGE);
+        }
+        
+        if (direction === 'next' || direction === 'first') {
+          query = query.limit(USERS_PER_PAGE);
+        }
+        
+        const snapshot = await query.get();
+        
+        if (snapshot.empty) {
+          usersList.innerHTML = '<tr><td colspan="5">No users found.</td></tr>';
+          nextPage.disabled = true;
+          return;
+        }
+        
+        lastVisible = snapshot.docs[snapshot.docs.length - 1];
+        firstVisible = snapshot.docs[0];
+        
+        renderUsers(snapshot.docs);
+        
+        // Update pagination buttons
+        prevPage.disabled = currentPage === 1;
+        nextPage.disabled = snapshot.docs.length < USERS_PER_PAGE;
+        pageInfo.textContent = `Page ${currentPage}`;
+        
+      } catch (error) {
+        console.error("Error loading users:", error);
+        usersList.innerHTML = '<tr><td colspan="5">Error loading users.</td></tr>';
+      }
+    }
+    
+    function renderUsers(docs) {
+      usersList.innerHTML = '';
+      
+      docs.forEach(doc => {
+        const user = doc.data();
+        const createdDate = user.createdAt ? user.createdAt.toDate().toLocaleDateString() : 'Unknown';
+        const isCurrentUser = auth.currentUser.uid === doc.id;
+        
+        let adminBtnHtml = '';
+        if (user.isAdmin) {
+          if (isCurrentUser) {
+            adminBtnHtml = `<button class="message-action-btn" disabled style="opacity:0.5">Current Admin</button>`;
+          } else {
+            adminBtnHtml = `<button class="message-action-btn edit-btn" onclick="toggleAdmin('${doc.id}', false)">Remove Admin</button>`;
+          }
+        } else {
+          adminBtnHtml = `<button class="message-action-btn" style="background:#4CAF50; color:white;" onclick="toggleAdmin('${doc.id}', true)">Make Admin</button>`;
+        }
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="user-row">
+            <img src="${user.avatar}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=fallback'">
+            ${escapeHtml(user.username)}
+          </td>
+          <td>${escapeHtml(user.email)}</td>
+          <td>
+            <span class="badge ${user.isAdmin ? 'admin' : ''}">
+              ${user.isAdmin ? 'Admin' : 'User'}
+            </span>
+          </td>
+          <td>${createdDate}</td>
+          <td style="display:flex; gap:10px;">
+            ${adminBtnHtml}
+            ${!user.isAdmin && !isCurrentUser ? `<button class="message-action-btn delete-btn" onclick="banUser('${doc.id}')">Ban</button>` : ''}
+          </td>
+        `;
+        usersList.appendChild(tr);
+      });
+    }
+    
+    // Search functionality
+    let searchTimeout;
+    userSearch.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(async () => {
+        const query = e.target.value.toLowerCase().trim();
+        
+        if (!query) {
+          isSearching = false;
+          currentPage = 1;
+          await loadUsers('first');
+          return;
+        }
+        
+        isSearching = true;
+        usersList.innerHTML = '<tr><td colspan="5">Searching...</td></tr>';
+        
+        try {
+          const query = e.target.value.toLowerCase().trim();
+          const snapshot = await db.collection('users')
+            .where('username', '>=', query)
+            .where('username', '<=', query + '\uf8ff')
+            .limit(20) // Limit results to save reads
+            .get();
+          
+          const results = snapshot.docs; // These are only the matches from server
+          
+          if (results.length === 0) {
+            usersList.innerHTML = '<tr><td colspan="5">No users found.</td></tr>';
+          } else {
+            renderUsers(results);
+          }
+          
+          prevPage.disabled = true;
+          nextPage.disabled = true;
+          pageInfo.textContent = `${results.length} result(s)`;
+          
+        } catch (error) {
+          console.error("Search error:", error);
+          usersList.innerHTML = '<tr><td colspan="5">Search error.</td></tr>';
+        }
+      }, 300);
+    });
+    
+    // Pagination controls
+    prevPage.addEventListener('click', async () => {
+      if (currentPage > 1) {
+        currentPage--;
+        await loadUsers('prev');
+      }
+    });
+    
+    nextPage.addEventListener('click', async () => {
+      currentPage++;
+      await loadUsers('next');
+    });
+    
+    // Toggle Admin
+    window.toggleAdmin = async (userId, makeAdmin) => {
+      const action = makeAdmin ? "promote this user to Admin" : "remove Admin privileges from this user";
+      if (!confirm(`Are you sure you want to ${action}?`)) return;
+      
+      try {
+        await db.collection('users').doc(userId).update({
+          isAdmin: makeAdmin
+        });
+        
+        await loadUsers();
+        statsCache.lastUpdated = 0; // Force refresh
+        await loadStatistics();
+        
+      } catch (error) {
+        console.error(error);
+        alert("Error updating role: " + error.message);
+      }
+    };
+    
+    // Ban User
+    window.banUser = async (userId) => {
+      if (!confirm("Are you sure? This will delete the user's profile from the database.")) return;
+      
+      try {
+        await db.collection('users').doc(userId).delete();
+        alert("User profile deleted.");
+        await loadUsers();
+        statsCache.lastUpdated = 0;
+        await loadStatistics();
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    };
+    
+    // Cleanup Old Messages with configurable days
+    cleanupBtn.addEventListener('click', async () => {
+      const days = parseInt(cleanupDays.value);
+      if (!confirm(`Are you sure you want to delete ALL messages older than ${days} days? This cannot be undone.`)) return;
+      
+      cleanupBtn.disabled = true;
+      cleanupStatus.textContent = "Calculating date range...";
+      
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+      const timestamp = firebase.firestore.Timestamp.fromDate(cutoffDate);
+      
+      try {
+        cleanupStatus.textContent = "Fetching old messages...";
+        const batchSize = 400;
+        let deletedCount = 0;
+        
+        while (true) {
+          const snapshot = await db.collection('messages')
+            .where('timestamp', '<', timestamp)
+            .limit(batchSize)
+            .get();
+          
+          if (snapshot.size === 0) break;
+          
+          const batch = db.batch();
+          snapshot.docs.forEach(doc => batch.delete(doc.ref));
+          await batch.commit();
+          
+          deletedCount += snapshot.size;
+          cleanupStatus.textContent = `Deleted ${deletedCount} messages...`;
+        }
+        
+        cleanupStatus.textContent = `✓ Success! Cleaned up ${deletedCount} old messages.`;
+        cleanupStatus.style.color = "var(--primary-color)";
+        
+        statsCache.lastUpdated = 0;
+        await loadStatistics();
+        
+      } catch (error) {
+        console.error(error);
+        cleanupStatus.textContent = "Error: " + error.message;
+        cleanupStatus.style.color = "#ff4444";
+      } finally {
+        cleanupBtn.disabled = false;
+      }
+    });
+    
+    // Delete users with no messages
+    document.getElementById('deleteEmptyUsersBtn').addEventListener('click', async () => {
+      if (!confirm("Delete all users who have never sent a message?")) return;
+      
+      bulkStatus.textContent = "Finding inactive users...";
+      
+      try {
+        const usersSnapshot = await db.collection('users').get();
+        let deletedCount = 0;
+        
+        for (const userDoc of usersSnapshot.docs) {
+          const userId = userDoc.id;
+          if (userId === auth.currentUser.uid) continue; // Don't delete yourself
+          
+          const messagesSnapshot = await db.collection('messages')
+            .where('userId', '==', userId)
+            .limit(1)
+            .get();
+          
+          if (messagesSnapshot.empty) {
+            await db.collection('users').doc(userId).delete();
+            deletedCount++;
+          }
+        }
+        
+        bulkStatus.textContent = `✓ Deleted ${deletedCount} inactive users.`;
+        bulkStatus.style.color = "var(--primary-color)";
+        await loadUsers();
+        statsCache.lastUpdated = 0;
+        await loadStatistics();
+        
+      } catch (error) {
+        bulkStatus.textContent = "Error: " + error.message;
+        bulkStatus.style.color = "#ff4444";
+      }
+    });
+    
+    // Permanently remove deleted messages
+    document.getElementById('cleanupDeletedMessagesBtn').addEventListener('click', async () => {
+      if (!confirm("Permanently remove all messages marked as deleted?")) return;
+      
+      bulkStatus.textContent = "Finding deleted messages...";
+      
+      try {
+        const batchSize = 400;
+        let deletedCount = 0;
+        
+        while (true) {
+          const snapshot = await db.collection('messages')
+            .where('deleted', '==', true)
+            .limit(batchSize)
+            .get();
+          
+          if (snapshot.size === 0) break;
+          
+          const batch = db.batch();
+          snapshot.docs.forEach(doc => batch.delete(doc.ref));
+          await batch.commit();
+          
+          deletedCount += snapshot.size;
+          bulkStatus.textContent = `Removed ${deletedCount} deleted messages...`;
+        }
+        
+        bulkStatus.textContent = `✓ Permanently removed ${deletedCount} deleted messages.`;
+        bulkStatus.style.color = "var(--primary-color)";
+        
+        statsCache.lastUpdated = 0;
+        await loadStatistics();
+        
+      } catch (error) {
+        bulkStatus.textContent = "Error: " + error.message;
+        bulkStatus.style.color = "#ff4444";
+      }
+    });
+    
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+
+</html>
