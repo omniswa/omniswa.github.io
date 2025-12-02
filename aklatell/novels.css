@@ -35,21 +35,21 @@
   margin: 0;
 }
 
+html {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
 body {
-  font-family: "Newsreader", serif;
+  font-family: "Newsreader", Georgia, 'Times New Roman', Times, serif;
   margin: 0;
-  padding: 2.4rem 2rem;
-  padding-top: 4rem;
+  padding: 4rem 2rem;
   max-width: 760px;
   margin-left: auto;
   margin-right: auto;
   line-height: 1.7;
   background: var(--bg-primary);
   color: var(--text-primary);
-}
-
-h1 {
-  font-size: 2.6rem;
 }
 
 /* ===== Floating Controls ===== */
@@ -136,7 +136,12 @@ h1 {
   transition: width 0.15s linear;
 }
 
-/* ======== Chapter Headings ======== */
+/* ==== Headings ==== */
+h1 {
+  font-size: 2.6rem;
+  margin: 0 0 1rem;
+}
+
 .chapter h1,
 .chapter h2 {
   text-align: center;
@@ -144,13 +149,13 @@ h1 {
   margin-bottom: 2rem;
   font-size: 1.8rem;
   letter-spacing: 1px;
-  font-weight: bold;
-  color: var(--text-primary);
+  font-weight: 700;
 }
 
 .chapter {
   content-visibility: auto;
-  contain-intrinsic-size: 1px 1400px;
+  contain-intrinsic-size: 1px 600px;
+  margin-bottom: 2rem;
 }
 
 /* ======== Paragraphs ======== */
@@ -272,7 +277,7 @@ html {
   }
   
   body {
-    padding: 2rem 1rem;
+    padding: 2.4rem;
     padding-top: 4rem;
     font-size: 16px;
   }

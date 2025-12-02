@@ -40,7 +40,7 @@ const loadStorage = () => {
     const storedTheme = localStorage.getItem('aklatell_theme');
     if (storedTheme === 'dark') {
       document.body.classList.add('dark-mode');
-      document.getElementById('themeToggle').textContent = '☀️';
+      document.getElementById('themeToggle').textContent = '🌙';
     }
   } catch (e) { console.error(e); }
   updateFavCount();
@@ -59,7 +59,7 @@ const renderBatch = () => {
   const nextBatch = filteredBooks.slice(renderedCount, renderedCount + ITEMS_PER_PAGE);
   
   if (nextBatch.length === 0 && renderedCount === 0) {
-    grid.innerHTML = '<div class="no-results">📖 No books found.</div>';
+    grid.innerHTML = '<div class="no-results">📖 – No books found.</div>';
     loadMoreBtn.style.display = 'none';
     return;
   }
