@@ -40,6 +40,11 @@ function setTheme(theme) {
 
 /* ========= Unified Scroll Handler ========= */
 let scrollTicking = false;
+let cachedMaxHeight = 0;
+
+function updateMetrics() {
+  cachedMaxHeight = elements.html.scrollHeight - window.innerHeight;
+}
 
 function handleScroll() {
   if (scrollTicking) return;
@@ -49,11 +54,11 @@ function handleScroll() {
     const scrollY = window.scrollY;
     state.scrollPosition = scrollY;
     
-    const maxHeight = elements.html.scrollHeight - window.innerHeight;
-    const scrollPercent = (scrollY / maxHeight) * 100;
-    
-    if (elements.progressBar) {
-      elements.progressBar.style.width = scrollPercent + "%";
+    if (cachedMaxHeight > 0) {
+      const scrollPercent = (scrollY / cachedMaxHeight) * 100;
+      if (elements.progressBar) {
+        elements.progressBar.style.width = scrollPercent + "%";
+      }
     }
     
     if (elements.backToTop) {
@@ -63,6 +68,12 @@ function handleScroll() {
     scrollTicking = false;
   });
 }
+
+// Update metrics on resize and init
+window.addEventListener('resize', () => {
+  updateMetrics();
+  handleScroll();
+});
 
 /* ========= Scroll Persistence ========= */
 const bookKey = "progress_" + (location.pathname.split("/").pop() || "default");
@@ -130,7 +141,7 @@ function setupEventDelegation() {
         window.location.href = "../index.html";
         break;
       case "backToTop":
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({ top: 0, behavior: "auto" });
         break;
     }
   });
@@ -143,7 +154,7 @@ function setupEventDelegation() {
     e.preventDefault();
     const target = document.querySelector(link.getAttribute("href"));
     if (target) {
-      target.scrollIntoView({ behavior: "smooth" });
+      target.scrollIntoView({ behavior: "auto" });
     }
   });
 }
@@ -161,6 +172,7 @@ function init() {
   elements.backToTop = document.getElementById("backToTop");
   
   initTheme();
+  updateMetrics();
   
   // Restore scroll
   try {

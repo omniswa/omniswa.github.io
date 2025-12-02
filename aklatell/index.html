@@ -2,52 +2,70 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="Aklatell Public Library - Discover your next great read from our collection of classic novels">
 	<title>Aklatell - Public Library | Discover Your Next Great Read</title>
+	<meta name="title" content="Aklatell - Public Library | Discover Your Next Great Read">
+	<meta name="description" content="Browse our extensive collection of fiction, non-fiction, mystery, romance, sci-fi, and fantasy books. Find your next favorite book at Aklatell Public Library.">
+	<meta name="keywords" content="library, books, fiction, non-fiction, mystery, romance, sci-fi, fantasy, reading, literature, online library, book collection, aklatell">
+	<meta name="author" content="Aklatell">
+	<meta name="robots" content="index, follow">
+	<meta name="language" content="English">
 	<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-	<header class="header">
-		<h1>📚 AKLATELL</h1>
-		<p>Discover your next great read</p>
-	</header>
 	
-	<div class="controls">
-		<button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
-		<button class="icon-btn" id="menuBtn" aria-label="Open menu">☰</button>
-		<button class="icon-btn" id="favoriteBtn" aria-label="View favorites">
-			⭐ <span id="favCount">0</span>
-		</button>
-		<div class="search-box">
-			<span class="search-icon">🔍</span>
-			<input type="text" id="searchInput" placeholder="Search books..." aria-label="Search books">
+	<nav class="navbar">
+		<div class="nav-brand">
+			<h1>📚 AKLATELL</h1>
+		</div>
+		<div class="nav-actions">
+			<button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
+			<button class="icon-btn" id="menuBtn" aria-label="Open menu">☰</button>
+		</div>
+	</nav>
+	
+	<main class="main-container">
+		<header class="page-header">
+			<h2>Discover your next great read</h2>
+			<p>Explore our curated collection of classics.</p>
+		</header>
+		
+		<div class="toolbar-sticky">
+			<div class="toolbar">
+				<div class="search-box">
+					<span class="search-icon">🔍</span>
+					<input type="text" id="searchInput" placeholder="Search by title or author..." aria-label="Search books">
+				</div>
+				
+				<div class="toolbar-actions">
+					<div class="filter-group">
+						<button class="filter-chip active" data-filter="all">All Books</button>
+						<button class="filter-chip" data-filter="favorites">
+							Favorites (<span id="favCount">0</span>)
+						</button>
+					</div>
+					
+					<select class="sort-select" id="sortSelect" aria-label="Sort books">
+						<option value="title">A-Z Title</option>
+						<option value="author">A-Z Author</option>
+						<option value="newest">Newest First</option>
+					</select>
+				</div>
+			</div>
 		</div>
 		
-		<select class="sort-select" id="sortSelect" aria-label="Sort books">
-			<option value="title">Sort by Title</option>
-			<option value="author">Sort by Author</option>
-			<option value="newest">Newest First</option>
-		</select>
-	</div>
-	
-	<div class="controls">
-		<div class="filter-tabs">
-			<button class="filter-tab active" data-filter="all">All Books</button>
-			<button class="filter-tab" data-filter="favorites">Favorites Only</button>
+		<div class="books-grid" id="booksGrid"></div>
+		
+		<div class="load-more-container">
+			<button id="loadMoreBtn" class="load-more-btn">Load More Books</button>
 		</div>
-	</div>
-	
-	<div class="books-grid" id="booksGrid"></div>
+	</main>
 	
 	<div class="modal" id="menuModal">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h2>Menu</h2>
 				<button class="close-btn" id="closeModal" aria-label="Close menu">&times;</button>
-				
 			</div>
 			<section class="modal-links">
 				<a href="#" class="menu-item">
@@ -59,22 +77,13 @@
 					<div class="menu-item-desc">Learn about Aklatell Library</div>
 				</a>
 				<a href="#" class="menu-item">
-					<div class="menu-item-title">📝 Request a Book</div>
-					<div class="menu-item-desc">Suggest books for our collection</div>
-				</a>
-				<a href="#" class="menu-item">
 					<div class="menu-item-title">📧 Contact</div>
 					<div class="menu-item-desc">Get in touch with us</div>
-				</a>
-				<a href="#" class="menu-item">
-					<div class="menu-item-title">❓ Help & FAQ</div>
-					<div class="menu-item-desc">Find answers to common questions</div>
 				</a>
 			</section>
 		</div>
 	</div>
 	
-	<script src="books.js"></script>
 	<script src="script.js"></script>
 </body>
 

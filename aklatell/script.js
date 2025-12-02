@@ -1,220 +1,203 @@
 // State management
+let allBooks = []; // Master list from JSON
+let filteredBooks = []; // Currently displayed subset
 let favorites = [];
-let currentBooks = [...books];
+let renderedCount = 0;
+const ITEMS_PER_PAGE = 12;
 let currentFilter = 'all';
 
-// Initialize from localStorage
-const initStorage = () => {
-  try {
-    // Load favorites from localStorage
-    const storedFavorites = localStorage.getItem('aklatell_favorites');
-    if (storedFavorites) {
-      favorites = JSON.parse(storedFavorites);
-    }
-  } catch (e) {
-    console.error('Error loading favorites:', e);
-    favorites = [];
-  }
+// Initialize
+const init = async () => {
+  loadStorage();
+  setupEventListeners();
+  await fetchBooks(); // Wait for data before rendering
+};
+
+// FETCH DATA (Replaces the old books.js file)
+const fetchBooks = async () => {
+  const grid = document.getElementById('booksGrid');
+  grid.innerHTML = '<div class="loading">Loading library...</div>';
   
   try {
-    // Load theme preference from localStorage
+    const response = await fetch('books.json');
+    if (!response.ok) throw new Error('Failed to load books');
+    
+    allBooks = await response.json();
+    filteredBooks = [...allBooks]; // Initialize filtered list
+    
+    resetAndRender(); // First render
+  } catch (error) {
+    console.error(error);
+    grid.innerHTML = '<div class="error">⚠️ Could not load books. Please refresh.</div>';
+  }
+};
+
+const loadStorage = () => {
+  try {
+    const storedFavs = localStorage.getItem('aklatell_favorites');
+    if (storedFavs) favorites = JSON.parse(storedFavs);
+    
     const storedTheme = localStorage.getItem('aklatell_theme');
     if (storedTheme === 'dark') {
       document.body.classList.add('dark-mode');
       document.getElementById('themeToggle').textContent = '☀️';
     }
-  } catch (e) {
-    console.error('Error loading theme:', e);
-  }
-};
-
-// Save favorites to localStorage
-const saveFavorites = () => {
-  try {
-    localStorage.setItem('aklatell_favorites', JSON.stringify(favorites));
-  } catch (e) {
-    console.error('Error saving favorites:', e);
-  }
-};
-
-// Save theme to localStorage
-const saveTheme = (isDark) => {
-  try {
-    localStorage.setItem('aklatell_theme', isDark ? 'dark' : 'light');
-  } catch (e) {
-    console.error('Error saving theme:', e);
-  }
-};
-
-// Theme toggle
-const themeToggle = document.getElementById('themeToggle');
-themeToggle.addEventListener('click', () => {
-  document.body.classList.toggle('dark-mode');
-  const isDark = document.body.classList.contains('dark-mode');
-  themeToggle.textContent = isDark ? '☀️' : '🌙';
-  saveTheme(isDark);
-});
-
-// Menu modal
-const menuBtn = document.getElementById('menuBtn');
-const menuModal = document.getElementById('menuModal');
-const closeModal = document.getElementById('closeModal');
-
-menuBtn.addEventListener('click', () => {
-  menuModal.classList.add('active');
-});
-
-closeModal.addEventListener('click', () => {
-  menuModal.classList.remove('active');
-});
-
-menuModal.addEventListener('click', (e) => {
-  if (e.target === menuModal) {
-    menuModal.classList.remove('active');
-  }
-});
-
-// Close modal with Escape key
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && menuModal.classList.contains('active')) {
-    menuModal.classList.remove('active');
-  }
-});
-
-// Favorites management
-const toggleFavorite = (bookId, event) => {
-  event.stopPropagation();
-  const index = favorites.indexOf(bookId);
-  
-  if (index > -1) {
-    favorites.splice(index, 1);
-  } else {
-    favorites.push(bookId);
-  }
-  
-  saveFavorites();
+  } catch (e) { console.error(e); }
   updateFavCount();
-  renderBooks(currentBooks);
 };
 
-const isFavorite = (bookId) => {
-  return favorites.includes(bookId);
-};
-
-// Render books with virtual scrolling optimization
-const renderBooks = (booksToRender) => {
+// Render Logic
+const renderBatch = () => {
   const grid = document.getElementById('booksGrid');
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
   
-  // Filter by favorites if needed
-  let displayBooks = booksToRender;
-  if (currentFilter === 'favorites') {
-    displayBooks = booksToRender.filter(book => isFavorite(book.id));
-  }
+  // Remove loading spinner if it exists
+  const loading = grid.querySelector('.loading');
+  if (loading) loading.remove();
   
-  if (displayBooks.length === 0) {
-    grid.innerHTML = '<div class="no-results">📖 No books found. Try a different search!</div>';
+  const fragment = document.createDocumentFragment();
+  const nextBatch = filteredBooks.slice(renderedCount, renderedCount + ITEMS_PER_PAGE);
+  
+  if (nextBatch.length === 0 && renderedCount === 0) {
+    grid.innerHTML = '<div class="no-results">📖 No books found.</div>';
+    loadMoreBtn.style.display = 'none';
     return;
   }
   
-  // Use DocumentFragment for better performance
-  const fragment = document.createDocumentFragment();
-  
-  displayBooks.forEach(book => {
-    const bookCard = document.createElement('div');
-    bookCard.className = 'book-card';
-    bookCard.innerHTML = `
-      <button class="favorite-btn ${isFavorite(book.id) ? 'active' : ''}" 
-              data-book-id="${book.id}"
-              aria-label="Toggle favorite">
-        ${isFavorite(book.id) ? '❤️' : '🤍'}
+  nextBatch.forEach(book => {
+    const isFav = favorites.includes(book.id);
+    const card = document.createElement('article');
+    card.className = 'book-card';
+    
+    card.innerHTML = `
+      <a href="${book.link}" class="card-link-overlay" aria-label="Read ${book.title}"></a>
+      <button class="favorite-btn ${isFav ? 'active' : ''}" 
+              data-id="${book.id}"
+              aria-label="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
+        ${isFav ? '❤️' : '🤍'}
       </button>
       <span class="book-emoji">${book.emoji}</span>
       <h3 class="book-title">${book.title}</h3>
       <p class="book-author">by ${book.author}</p>
       <p class="book-preview">${book.preview}</p>
     `;
-    
-    // Add click handler for navigation
-    bookCard.addEventListener('click', (e) => {
-      if (!e.target.closest('.favorite-btn')) {
-        window.location.href = book.link;
-      }
-    });
-    
-    fragment.appendChild(bookCard);
+    fragment.appendChild(card);
   });
   
-  // Clear and append in one operation
-  grid.innerHTML = '';
   grid.appendChild(fragment);
+  renderedCount += nextBatch.length;
   
-  // Attach favorite button listeners
-  document.querySelectorAll('.favorite-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const bookId = parseInt(btn.dataset.bookId);
-      toggleFavorite(bookId, e);
-    });
+  if (renderedCount >= filteredBooks.length) {
+    loadMoreBtn.style.display = 'none';
+  } else {
+    loadMoreBtn.style.display = 'block';
+  }
+};
+
+const resetAndRender = () => {
+  document.getElementById('booksGrid').innerHTML = '';
+  renderedCount = 0;
+  renderBatch();
+};
+
+// Filters & Sort
+const applyFilters = (searchTerm) => {
+  let result = allBooks; // Start from master list
+  
+  // 1. Filter by Favorites Tab
+  if (currentFilter === 'favorites') {
+    result = result.filter(b => favorites.includes(b.id));
+  }
+  
+  // 2. Filter by Search
+  if (searchTerm) {
+    result = result.filter(b =>
+      b.title.toLowerCase().includes(searchTerm) ||
+      b.author.toLowerCase().includes(searchTerm)
+    );
+  }
+  
+  // 3. Sort
+  const sortBy = document.getElementById('sortSelect').value;
+  if (sortBy === 'title') result.sort((a, b) => a.title.localeCompare(b.title));
+  if (sortBy === 'author') result.sort((a, b) => a.author.localeCompare(b.author));
+  if (sortBy === 'newest') result.sort((a, b) => b.id - a.id);
+  
+  filteredBooks = result;
+  resetAndRender();
+};
+
+// Event Listeners
+const setupEventListeners = () => {
+  document.getElementById('loadMoreBtn').addEventListener('click', renderBatch);
+  
+  let searchTimeout;
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      applyFilters(e.target.value.toLowerCase());
+    }, 300);
+  });
+  
+  document.getElementById('sortSelect').addEventListener('change', () => {
+    applyFilters(document.getElementById('searchInput').value.toLowerCase());
+  });
+  
+  document.querySelector('.toolbar-actions').addEventListener('click', (e) => {
+    if (e.target.classList.contains('filter-chip')) {
+      document.querySelectorAll('.filter-chip').forEach(t => t.classList.remove('active'));
+      e.target.classList.add('active');
+      currentFilter = e.target.dataset.filter;
+      applyFilters(document.getElementById('searchInput').value.toLowerCase());
+    }
+  });
+  
+  document.getElementById('booksGrid').addEventListener('click', (e) => {
+    const btn = e.target.closest('.favorite-btn');
+    if (btn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const bookId = parseInt(btn.dataset.id);
+      toggleFavorite(bookId);
+      
+      const isFav = favorites.includes(bookId);
+      btn.classList.toggle('active', isFav);
+      btn.textContent = isFav ? '❤️' : '🤍';
+      btn.setAttribute('aria-label', isFav ? 'Remove from favorites' : 'Add to favorites');
+    }
+  });
+  
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    document.getElementById('themeToggle').textContent = isDark ? '☀️' : '🌙';
+    localStorage.setItem('aklatell_theme', isDark ? 'dark' : 'light');
+  });
+  
+  const menuModal = document.getElementById('menuModal');
+  document.getElementById('menuBtn').addEventListener('click', () => menuModal.classList.add('active'));
+  document.getElementById('closeModal').addEventListener('click', () => menuModal.classList.remove('active'));
+  menuModal.addEventListener('click', (e) => {
+    if (e.target === menuModal) menuModal.classList.remove('active');
   });
 };
 
-// Debounced search for performance
-let searchTimeout;
-const searchInput = document.getElementById('searchInput');
-searchInput.addEventListener('input', (e) => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    const searchTerm = e.target.value.toLowerCase();
-    currentBooks = books.filter(book =>
-      book.title.toLowerCase().includes(searchTerm) ||
-      book.author.toLowerCase().includes(searchTerm)
-    );
-    renderBooks(currentBooks);
-  }, 150);
-});
-
-// Sort
-const sortSelect = document.getElementById('sortSelect');
-sortSelect.addEventListener('change', (e) => {
-  const sortBy = e.target.value;
+const toggleFavorite = (id) => {
+  const index = favorites.indexOf(id);
+  if (index === -1) favorites.push(id);
+  else favorites.splice(index, 1);
   
-  if (sortBy === 'title') {
-    currentBooks.sort((a, b) => a.title.localeCompare(b.title));
-  } else if (sortBy === 'author') {
-    currentBooks.sort((a, b) => a.author.localeCompare(b.author));
-  } else if (sortBy === 'newest') {
-    currentBooks.sort((a, b) => b.id - a.id);
+  localStorage.setItem('aklatell_favorites', JSON.stringify(favorites));
+  updateFavCount();
+  
+  if (currentFilter === 'favorites') {
+    applyFilters(document.getElementById('searchInput').value.toLowerCase());
   }
-  
-  renderBooks(currentBooks);
-});
+};
 
-// Filter tabs
-const filterTabs = document.querySelectorAll('.filter-tab');
-filterTabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    filterTabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    currentFilter = tab.dataset.filter;
-    renderBooks(currentBooks);
-  });
-});
-
-// Favorites button
-const favoriteBtn = document.getElementById('favoriteBtn');
-favoriteBtn.addEventListener('click', () => {
-  const favTab = document.querySelector('[data-filter="favorites"]');
-  filterTabs.forEach(t => t.classList.remove('active'));
-  favTab.classList.add('active');
-  currentFilter = 'favorites';
-  renderBooks(currentBooks);
-});
-
-// Update favorites count
 const updateFavCount = () => {
   document.getElementById('favCount').textContent = favorites.length;
 };
 
-// Initialize
-initStorage();
-updateFavCount();
-renderBooks(currentBooks);
+// Run
+init();

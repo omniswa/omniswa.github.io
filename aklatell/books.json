@@ -1,0 +1,163 @@
+[
+  {
+    "id": 1,
+    "title": "A Doll's House",
+    "author": "Henrik Ibsen",
+    "emoji": "📕",
+    "link": "novels/a-doll-house.html",
+    "preview": "A groundbreaking drama exploring marriage, independence, and societal expectations."
+  },
+  {
+    "id": 2,
+    "title": "A Room With a View",
+    "author": "E.M. Forster",
+    "emoji": "📘",
+    "link": "novels/a-room-with-a-view.html",
+    "preview": "A tale of love, self-discovery, and freedom set against the beauty of Italy and England."
+  },
+  {
+    "id": 3,
+    "title": "Anne of Green Gables",
+    "author": "L. M. Montgomery",
+    "emoji": "📗",
+    "link": "novels/anne-of-green-gables.html",
+    "preview": "The charming story of imaginative Anne Shirley and her adventures in Avonlea."
+  },
+  {
+    "id": 4,
+    "title": "Alice's Adventures in Wonderland",
+    "author": "Lewis Carroll",
+    "emoji": "📙",
+    "link": "novels/alice-adventures-in-wonderland.html",
+    "preview": "A whimsical descent into a world of absurdity, logic, and imagination."
+  },
+  {
+    "id": 5,
+    "title": "Cranford",
+    "author": "Elizabeth Gaskell",
+    "emoji": "📘",
+    "link": "novels/cranford.html",
+    "preview": "A gentle portrait of life in a small English town filled with humor and social insight."
+  },
+  {
+    "id": 6,
+    "title": "Dracula",
+    "author": "Bram Stoker",
+    "emoji": "📕",
+    "link": "novels/dracula.html",
+    "preview": "The iconic Gothic horror novel chronicling Count Dracula’s sinister presence."
+  },
+  {
+    "id": 7,
+    "title": "Frankenstein",
+    "author": "Mary Shelley",
+    "emoji": "📗",
+    "link": "novels/frankenstein.html",
+    "preview": "A haunting tale of creation, ambition, and the consequences of playing God."
+  },
+  {
+    "id": 8,
+    "title": "Jane Eyre",
+    "author": "Charlotte Brontë",
+    "emoji": "📘",
+    "link": "novels/jane-eyre.html",
+    "preview": "A powerful story of resilience, love, and moral integrity."
+  },
+  {
+    "id": 9,
+    "title": "Little Women",
+    "author": "Louisa May Alcott",
+    "emoji": "📙",
+    "link": "novels/little-women.html",
+    "preview": "A beloved coming-of-age story following the four March sisters."
+  },
+  {
+    "id": 10,
+    "title": "Pride and Prejudice",
+    "author": "Jane Austen",
+    "emoji": "📕",
+    "link": "novels/pride-and-prejudice.html",
+    "preview": "A witty romantic classic exploring love, class, and first impressions."
+  },
+  {
+    "id": 11,
+    "title": "Romeo and Juliet",
+    "author": "William Shakespeare",
+    "emoji": "📘",
+    "link": "novels/romeo-and-juliet.html",
+    "preview": "A timeless tragedy of young love, fate, and family conflict."
+  },
+  {
+    "id": 12,
+    "title": "The Adventures of Huckleberry Finn",
+    "author": "Mark Twain",
+    "emoji": "📗",
+    "link": "novels/the-adventures-of-huckleberry-finn.html",
+    "preview": "A coming-of-age journey down the Mississippi River filled with adventure and social insight."
+  },
+  {
+    "id": 13,
+    "title": "The Blue Castle",
+    "author": "L. M. Montgomery",
+    "emoji": "📙",
+    "link": "novels/the-blue-castle.html",
+    "preview": "A heartwarming story of self-discovery and newfound freedom."
+  },
+  {
+    "id": 14,
+    "title": "The Enchanted April",
+    "author": "Elizabeth von Arnim",
+    "emoji": "📘",
+    "link": "novels/the-enchanted-april.html",
+    "preview": "A charming tale of four women who rediscover joy and transformation in an Italian villa."
+  },
+  {
+    "id": 15,
+    "title": "The Great Gatsby",
+    "author": "F. Scott Fitzgerald",
+    "emoji": "📕",
+    "link": "novels/the-great-gatsby.html",
+    "preview": "A vivid portrait of ambition, love, and illusion in the Jazz Age."
+  },
+  {
+    "id": 16,
+    "title": "The Importance of Being Earnest",
+    "author": "Oscar Wilde",
+    "emoji": "📙",
+    "link": "novels/the-importance-of-being-earnest.html",
+    "preview": "A witty comedy of manners filled with satire, deception, and clever wordplay."
+  },
+  {
+    "id": 17,
+    "title": "The Picture of Dorian Gray",
+    "author": "Oscar Wilde",
+    "emoji": "📗",
+    "link": "novels/the-picture-of-dorian-gray.html",
+    "preview": "A dark philosophical tale of beauty, corruption, and the consequences of vanity."
+  },
+  {
+    "id": 18,
+    "title": "The Souls of Black Folk",
+    "author": "W. E. B. Du Bois",
+    "emoji": "📘",
+    "link": "novels/the-souls-of-black-folk.html",
+    "preview": "A foundational work of African-American literature blending history, memoir, and sociology."
+  },
+  {
+    "id": 19,
+    "title": "The Strange Case of Dr. Jekyll and Mr. Hyde",
+    "author": "Robert Louis Stevenson",
+    "emoji": "📕",
+    "link": "novels/the-strange-case-of-dr-jekyll-and-mr-hyde.html",
+    "preview": "A chilling exploration of dual identity and the darkness within the human psyche."
+  },
+  {
+    "id": 20,
+    "title": "Walden",
+    "author": "Henry David Thoreau",
+    "emoji": "📗",
+    "link": "novels/walden.html",
+    "preview": "A reflective account of simple living, nature, and philosophical insight."
+  }
+  
+]
