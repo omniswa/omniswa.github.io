@@ -4,7 +4,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="preconnect" href="https://aklatell.pages.dev" />
+	<link rel="preconnect" href="https://aklatell.pages.dev" crossorigin>
 	
 	<title>Aklatell - Public Library | Discover Your Next Great Read</title>
 	<meta name="title" content="Aklatell - Public Library | Discover Your Next Great Read">
@@ -13,6 +13,10 @@
 	<meta name="author" content="Aklatell">
 	<meta name="robots" content="index, follow">
 	<meta name="language" content="English">
+	
+	<!-- Preload critical font & stylesheet -->
+	<link rel="preload" href="../newsreader.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="preload" href="style.css" as="style">
 	<link rel="stylesheet" href="style.css">
 </head>
 
@@ -58,10 +62,13 @@
 			</div>
 		</div>
 		
-		<div class="books-grid" id="booksGrid"></div>
+		<div class="books-grid" id="booksGrid">
+			<!-- Skeleton loader to prevent CLS -->
+			<div class="loading">Loading library...</div>
+		</div>
 		
 		<div class="load-more-container">
-			<button id="loadMoreBtn" class="load-more-btn">Load More Books</button>
+			<button id="loadMoreBtn" class="load-more-btn" style="display: none;">Load More Books</button>
 		</div>
 	</main>
 	
@@ -88,7 +95,8 @@
 		</div>
 	</div>
 	
-	<script src="script.js"></script>
+	<!-- Defer JavaScript execution -->
+	<script src="script.js" defer></script>
 </body>
 
 </html>
