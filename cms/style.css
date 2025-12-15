@@ -1,0 +1,133 @@
+:root {
+  --primary: #2c3e50;
+  --accent: #e74c3c;
+  --bg: #f4f7f6;
+  --text: #333;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Navigation */
+nav {
+  background: white;
+  padding: 1rem 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.nav-container {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-decoration: none;
+  color: var(--primary);
+}
+
+ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+a {
+  text-decoration: none;
+  color: var(--primary);
+}
+
+/* Layout */
+#app {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+/* Blog Posts */
+.post-card {
+  background: white;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.post-title {
+  margin-top: 0;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.post-meta {
+  font-size: 0.85rem;
+  color: #777;
+  margin-bottom: 10px;
+}
+
+.read-more {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--accent);
+  font-weight: bold;
+}
+
+/* Single Post View */
+.single-post-content {
+  line-height: 1.8;
+  font-size: 1.1rem;
+}
+
+.single-post-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Admin / Forms */
+.form-group {
+  margin-bottom: 15px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+#editor {
+  height: 300px;
+  background: white;
+}
+
+button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.btn-delete {
+  background: var(--accent);
+  float: right;
+}
+
+.error {
+  color: red;
+  margin-bottom: 10px;
+}

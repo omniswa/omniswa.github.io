@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter Extractor</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 3rem;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h1 {
+      color: #667eea;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .instructions {
+      background: #f0f4ff;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      border-left: 4px solid #667eea;
+    }
+
+    .instructions ol {
+      margin-left: 1.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .instructions li {
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-area {
+      border: 3px dashed #ddd;
+      border-radius: 8px;
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 1.5rem;
+    }
+
+    .upload-area:hover {
+      border-color: #667eea;
+      background: #f9f9ff;
+    }
+
+    .upload-area.dragover {
+      border-color: #667eea;
+      background: #f0f4ff;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .status {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      display: block;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      display: block;
+    }
+
+    .result {
+      display: none;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result-info {
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .result-info p {
+      margin-bottom: 0.5rem;
+    }
+
+    .result-info strong {
+      color: #667eea;
+    }
+
+    button {
+      width: 100%;
+      padding: 1rem;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #5568d3;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .code-block {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📚 Chapter Extractor</h1>
+    
+    <div class="instructions">
+      <strong>How to use:</strong>
+      <ol>
+        <li>Upload your HTML book file</li>
+        <li>Click "Download JSON" to save the extracted chapters</li>
+        <li>Use the JSON file with the Book Reader</li>
+      </ol>
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">📤</div>
+      <p><strong>Click or drag HTML file here</strong></p>
+      <p style="color: #999; font-size: 0.9rem;">Supports single-page HTML books</p>
+    </div>
+
+    <input type="file" id="fileInput" accept=".html,.htm">
+
+    <div class="status" id="status"></div>
+
+    <div class="result" id="result">
+      <div class="result-info">
+        <p><strong>Title:</strong> <span id="resultTitle"></span></p>
+        <p><strong>Author:</strong> <span id="resultAuthor"></span></p>
+        <p><strong>Chapters:</strong> <span id="resultChapters"></span></p>
+      </div>
+      <button id="downloadBtn">Download JSON File</button>
+    </div>
+  </div>
+
+  <script>
+    let extractedData = null;
+
+    class ChapterExtractor {
+      static extract(htmlContent) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+
+        // Extract title
+        const titleEl = doc.querySelector('h1');
+        const title = titleEl ? titleEl.textContent.trim() : 'Untitled';
+
+        // Extract author
+        let author = 'Unknown';
+        const authorP = doc.querySelector('header p');
+        if (authorP) {
+          const authorText = authorP.textContent;
+          const match = authorText.match(/by\s+(.+)/i);
+          if (match) author = match[1].trim();
+        }
+
+        // Extract chapters
+        const chapters = [];
+        const chapterDivs = doc.querySelectorAll('.chapter');
+
+        chapterDivs.forEach((chapterDiv, index) => {
+          const h2 = chapterDiv.querySelector('h2');
+          let chapterTitle = h2 ? h2.textContent.trim() : `Chapter ${index + 1}`;
+          
+          const anchor = chapterDiv.querySelector('h2 a[id]');
+          const chapterId = anchor ? anchor.id : `chapter${index + 1}`;
+
+          chapters.push({
+            id: chapterId,
+            title: chapterTitle,
+            content: chapterDiv.innerHTML.trim()
+          });
+        });
+
+        return { title, author, chapters };
+      }
+    }
+
+    // File handling
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const status = document.getElementById('status');
+    const result = document.getElementById('result');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) processFile(file);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) processFile(file);
+    });
+
+    function processFile(file) {
+      if (!file.name.match(/\.(html|htm)$/i)) {
+        showStatus('Please upload an HTML file', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const htmlContent = e.target.result;
+          extractedData = ChapterExtractor.extract(htmlContent);
+          
+          document.getElementById('resultTitle').textContent = extractedData.title;
+          document.getElementById('resultAuthor').textContent = extractedData.author;
+          document.getElementById('resultChapters').textContent = extractedData.chapters.length;
+
+          result.classList.add('show');
+          showStatus('Extraction successful! Click the button to download.', 'success');
+        } catch (error) {
+          showStatus('Error extracting chapters: ' + error.message, 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function showStatus(message, type) {
+      status.textContent = message;
+      status.className = 'status ' + type;
+    }
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      if (!extractedData) return;
+
+      const json = JSON.stringify(extractedData, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = extractedData.title.replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+
+      showStatus('JSON file downloaded successfully!', 'success');
+    });
+  </script>
+</body>
+</html>

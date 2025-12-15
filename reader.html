@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Reader</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Georgia, serif;
+      line-height: 1.8;
+      color: #333;
+      background: #f5f5f0;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      min-height: 100vh;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+    }
+    
+    header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    header p {
+      font-style: italic;
+      opacity: 0.9;
+    }
+    
+    nav {
+      background: #f9f9f9;
+      border-bottom: 2px solid #e0e0e0;
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .chapter-selector {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .chapter-selector label {
+      font-weight: bold;
+    }
+    
+    .chapter-selector select {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.5rem;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    
+    .nav-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .nav-buttons button {
+      padding: 0.5rem 1rem;
+      border: none;
+      background: #667eea;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+    
+    .nav-buttons button:hover:not(:disabled) {
+      background: #5568d3;
+    }
+    
+    .nav-buttons button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    main {
+      padding: 2rem;
+    }
+    
+    .chapter-content {
+      min-height: 400px;
+    }
+    
+    .chapter-content h2 {
+      color: #667eea;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .chapter-content h3 {
+      color: #764ba2;
+      margin: 1.5rem 0 1rem;
+    }
+    
+    .chapter-content p {
+      margin-bottom: 1rem;
+      text-align: justify;
+    }
+    
+    .chapter-content p b {
+      font-weight: bold;
+    }
+    
+    .chapter-content p i {
+      font-style: italic;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #999;
+    }
+    
+    .error {
+      background: #fee;
+      border: 2px solid #fcc;
+      padding: 1rem;
+      border-radius: 4px;
+      color: #c33;
+      margin: 1rem 0;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: #999;
+      border-top: 2px solid #e0e0e0;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        box-shadow: none;
+      }
+      
+      header h1 {
+        font-size: 1.5rem;
+      }
+      
+      main {
+        padding: 1rem;
+      }
+      
+      .chapter-selector {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .chapter-selector select {
+        min-width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1 id="book-title">Loading...</h1>
+      <p id="book-author">by Unknown</p>
+    </header>
+    
+    <nav>
+      <div class="chapter-selector">
+        <label for="chapter-select">Chapter:</label>
+        <select id="chapter-select">
+          <option>Loading chapters...</option>
+        </select>
+        <div class="nav-buttons">
+          <button id="prev-btn" disabled>← Previous</button>
+          <button id="next-btn" disabled>Next →</button>
+        </div>
+      </div>
+    </nav>
+    
+    <main>
+      <div class="chapter-content" id="chapter-content">
+        <div class="loading">Loading book data...</div>
+      </div>
+    </main>
+    
+    <footer>
+      <p>Simple Book Reader • Load chapters on demand</p>
+    </footer>
+  </div>
+  
+  <script>
+    class BookReader {
+      constructor(jsonPath) {
+        this.jsonPath = jsonPath;
+        this.bookData = null;
+        this.currentChapterIndex = 0;
+        this.init();
+      }
+      
+      async init() {
+        try {
+          await this.loadBookData();
+          this.setupUI();
+          this.loadChapter(0);
+        } catch (error) {
+          this.showError('Failed to load book data: ' + error.message);
+        }
+      }
+      
+      async loadBookData() {
+        const response = await fetch(this.jsonPath);
+        if (!response.ok) {
+          throw new Error('Failed to fetch book data');
+        }
+        this.bookData = await response.json();
+      }
+      
+      setupUI() {
+        // Set book title and author
+        document.getElementById('book-title').textContent = this.bookData.title;
+        document.getElementById('book-author').textContent = `by ${this.bookData.author}`;
+        
+        // Populate chapter selector
+        const select = document.getElementById('chapter-select');
+        select.innerHTML = '';
+        this.bookData.chapters.forEach((chapter, index) => {
+          const option = document.createElement('option');
+          option.value = index;
+          option.textContent = chapter.title;
+          select.appendChild(option);
+        });
+        
+        // Event listeners
+        select.addEventListener('change', (e) => {
+          this.loadChapter(parseInt(e.target.value));
+        });
+        
+        document.getElementById('prev-btn').addEventListener('click', () => {
+          this.loadChapter(this.currentChapterIndex - 1);
+        });
+        
+        document.getElementById('next-btn').addEventListener('click', () => {
+          this.loadChapter(this.currentChapterIndex + 1);
+        });
+      }
+      
+      loadChapter(index) {
+        if (index < 0 || index >= this.bookData.chapters.length) {
+          return;
+        }
+        
+        this.currentChapterIndex = index;
+        const chapter = this.bookData.chapters[index];
+        
+        // Update content
+        const contentDiv = document.getElementById('chapter-content');
+        contentDiv.innerHTML = `<div class="chapter">${chapter.content}</div>`;
+        
+        // Update selector
+        document.getElementById('chapter-select').value = index;
+        
+        // Update navigation buttons
+        document.getElementById('prev-btn').disabled = index === 0;
+        document.getElementById('next-btn').disabled = index === this.bookData.chapters.length - 1;
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Save progress to localStorage
+        localStorage.setItem(`bookReader_${this.bookData.title}`, index);
+      }
+      
+      showError(message) {
+        const contentDiv = document.getElementById('chapter-content');
+        contentDiv.innerHTML = `<div class="error">${message}</div>`;
+      }
+    }
+    
+    // Initialize the reader with your JSON file path
+    // Change 'book.json' to your actual JSON file path
+    const reader = new BookReader('book.json');
+  </script>
+</body>
+
+</html>
